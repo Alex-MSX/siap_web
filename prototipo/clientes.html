@@ -138,10 +138,17 @@
     });
   }
 
-  function pintar() {
+  // soloDetalle = true: no redibuja la tabla de contratantes (solo mueve la fila marcada),
+  // para que el doble clic no se pierda al seleccionar otro cliente
+  function pintar(soloDetalle) {
     var lista = filtrarClientes();
     var sel = CLIENTES.filter(function (c) { return c.id === estado.seleccionado; })[0] || CLIENTES[0];
     var q = estado.busqueda.trim();
+    if (soloDetalle) {
+      document.querySelectorAll('#tabla-clientes tr[data-id]').forEach(function (tr) {
+        tr.classList.toggle('on', Number(tr.dataset.id) === sel.id);
+      });
+    } else {
     document.getElementById('resultado').textContent = q
       ? lista.length + ' resultado' + (lista.length === 1 ? '' : 's') + ' para “' + q + '”'
       : 'Mostrando ' + lista.length + ' clientes';
@@ -149,13 +156,14 @@
     // Contratantes
     document.getElementById('tabla-clientes').innerHTML = lista.map(function (c) {
       var vigentes = c.polizas.filter(function (p) { return p.est !== 'off'; }).length;
-      return '<tr class="clic' + (c.id === sel.id ? ' on' : '') + '" data-id="' + c.id + '">' +
+      return '<tr class="clic' + (c.id === sel.id ? ' on' : '') + '" data-id="' + c.id + '" title="Doble clic para abrir la ficha">' +
         '<td class="num" style="color: var(--gris)">' + c.id + '</td>' +
-        '<td class="envuelve"><a class="liga-cliente" href="ficha.html?id=' + c.id + '">' + esc(c.nombre) + '</a></td>' +
+        '<td class="envuelve" style="font-weight: 500">' + esc(c.nombre) + '</td>' +
         '<td class="num">' + esc(c.rfc) + '</td><td class="envuelve">' + esc(c.ejecutivo) + '</td>' +
         '<td class="der num">' + vigentes + '</td></tr>';
     }).join('');
     document.getElementById('sin-clientes').hidden = lista.length > 0;
+    }
 
     // Contactos
     document.getElementById('lista-contactos').innerHTML = sel.contactos.map(function (ct) {
@@ -198,13 +206,18 @@
 
   // Eventos
   inputBuscar.addEventListener('input', function () { estado.busqueda = inputBuscar.value; pintar(); });
-  document.getElementById('tabla-clientes').addEventListener('click', function (e) {
-    if (e.target.closest('a')) return; // los enlaces abren la ficha
+  // Igual que en SIAP: un clic selecciona al cliente, doble clic abre su ficha
+  var tablaClientes = document.getElementById('tabla-clientes');
+  tablaClientes.addEventListener('click', function (e) {
     var fila = e.target.closest('tr[data-id]');
-    if (!fila) return;
+    if (!fila || Number(fila.dataset.id) === estado.seleccionado) return;
     estado.seleccionado = Number(fila.dataset.id);
     estado.pestana = 'todos';
-    pintar();
+    pintar(true);
+  });
+  tablaClientes.addEventListener('dblclick', function (e) {
+    var fila = e.target.closest('tr[data-id]');
+    if (fila) location.href = 'ficha.html?id=' + fila.dataset.id;
   });
   document.getElementById('pestanas').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-k]');
