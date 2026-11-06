@@ -1,0 +1,18 @@
+# Configuración con contraseñas o accesos: nunca se sube
+.env
+.env.*
+config.local.php
+*.local.php
+secrets/
+
+# Respaldos y exportaciones de bases de datos
+*.sql.gz
+*.bak
+*.mdb
+*.accdb
+respaldos/
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini

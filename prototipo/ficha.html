@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ficha del cliente · SIAP</title>
+<link rel="icon" href="assets/img/logo-prolomer.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/siap.css">
+</head>
+<body>
+<div class="app">
+  <nav id="menu" class="menu" aria-label="Menú principal"></nav>
+
+  <div class="contenido">
+    <header class="barra">
+      <button id="btn-menu" class="btn icono" aria-label="Contraer menú" aria-expanded="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+      <form class="buscador" action="clientes.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6676" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <label for="buscar" class="sr">Buscar cliente, RFC, grupo o póliza</label>
+        <input id="buscar" type="search" placeholder="Buscar cliente, RFC, grupo o póliza…" autocomplete="off">
+      </form>
+      <div class="barra-der">
+        <button class="btn icono" aria-label="Notificaciones">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.9 1.9 0 003.4 0"></path></svg>
+        </button>
+        <div class="avatar" aria-label="Usuario">AM</div>
+      </div>
+    </header>
+
+    <main class="pagina">
+      <div class="migas">
+        <a href="clientes.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>Clientes</a>
+        <span>/</span><span>Ficha del cliente</span>
+      </div>
+
+      <!-- Encabezado -->
+      <section class="tarjeta pad" aria-label="Datos del cliente">
+        <div class="ficha-cab">
+          <div id="f-avatar" class="ficha-avatar"></div>
+          <div class="pila" style="gap: 6px; flex: 1 1 300px">
+            <h1 id="f-nombre" style="font-size: 24px"></h1>
+            <div id="f-chips" class="chips"></div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px">
+            <button class="btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13.5 6.5l4 4"></path></svg>
+              Editar
+            </button>
+            <button class="btn primario">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+              Nueva orden
+            </button>
+          </div>
+        </div>
+        <div id="f-campos" class="campos"></div>
+      </section>
+
+      <!-- Cartera por ramo + documentos -->
+      <div class="fila">
+        <section class="tarjeta pad" style="flex: 2 1 560px; min-width: 0" aria-label="Cartera por ramo">
+          <div class="tarjeta-cab">
+            <h2 style="font-size: 16px">Cartera por ramo</h2>
+            <span id="f-total" style="font-size: 14px; color: var(--gris)"></span>
+          </div>
+          <div id="f-ramos" class="ramos"></div>
+        </section>
+
+        <section class="tarjeta pad" style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column" aria-label="Documentos">
+          <div class="tarjeta-cab" style="margin-bottom: 6px">
+            <h2 style="font-size: 16px">Documentos</h2>
+            <button class="btn chico">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"></path></svg>
+              Subir
+            </button>
+          </div>
+          <div id="f-docs"></div>
+          <div id="f-aviso" class="aviso" hidden></div>
+        </section>
+      </div>
+
+      <!-- Contactos / Tarjetas / Portales -->
+      <section class="tarjeta sin-pad" aria-label="Contactos, tarjetas y portales">
+        <div class="tarjeta-cab" style="padding-right: 14px; border-bottom: 1px solid var(--borde)">
+          <div id="f-pestanas" class="pestanas" role="tablist" aria-label="Secciones" style="border-bottom: 0"></div>
+          <button id="f-agregar" class="btn chico"></button>
+        </div>
+        <div id="f-panel"></div>
+      </section>
+
+      <!-- Direcciones -->
+      <section class="tarjeta sin-pad" style="flex: 1 1 auto" aria-label="Direcciones">
+        <div class="tarjeta-cab" style="padding: 16px 22px">
+          <h2 style="font-size: 16px">Direcciones</h2>
+          <button class="btn chico">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+            Agregar dirección
+          </button>
+        </div>
+        <div class="scroll-x">
+          <table>
+            <thead><tr><th>Calle</th><th>Exterior</th><th>Interior</th><th>Colonia</th><th>Alcaldía / Municipio</th><th>C.P.</th><th class="der">Acciones</th></tr></thead>
+            <tbody id="f-direcciones"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="assets/siap.js"></script>
+<script src="assets/datos-ejemplo.js"></script>
+<script>
+(function () {
+  var esc = SIAP.esc, dinero = SIAP.dinero, icono = SIAP.icono;
+  SIAP.montarMenu('clientes');
+
+  var id = Number(new URLSearchParams(location.search).get('id'));
+  var c = SIAP_DATOS.clientes.filter(function (x) { return x.id === id; })[0] || SIAP_DATOS.clientes[0];
+  document.title = c.nombre + ' · SIAP';
+
+  var I = {
+    editar: 'M4 20h4L19 9l-4-4L4 16z',
+    borrar: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13',
+    ver: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z',
+    correo: 'M3 6h18v12H3zM3 7l9 6 9-6',
+    tel: 'M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2',
+    mensajeria: 'M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a2 2 0 100-4 2 2 0 000 4zM17 19a2 2 0 100-4 2 2 0 000 4z',
+    doc: 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h4',
+    mas: 'M12 5v14M5 12h14',
+    estrella: 'M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z'
+  };
+
+  var RAMOS = [
+    { cat: 'autos', label: 'Autos', d: 'M5 16V11l2-5h10l2 5v5M3 16h18v2H3zM7 19v1M17 19v1M5 11h14' },
+    { cat: 'gmm', label: 'Gastos médicos', d: 'M4 8h16v12H4zM9 8V5h6v3M12 11v6M9 14h6' },
+    { cat: 'vida', label: 'Vida', d: 'M12 20s-8-4.6-8-10a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 5.4-8 10-8 10zM5 12h3l2-3 2 5 2-2h5' },
+    { cat: 'hogar', label: 'Hogar', d: 'M3 11l9-7 9 7M5 10v10h14V10M10 20v-6h4v6' },
+    { cat: 'accidentes', label: 'Accidentes', d: 'M7.5 16.5l9-9a3 3 0 00-4.2-4.2l-9 9a3 3 0 004.2 4.2zM14 14l3.5 3.5a3 3 0 004.2-4.2L18 10' },
+    { cat: 'rc', label: 'Responsabilidad civil', d: 'M12 4v16M8 20h8M5 7h14M5 7l-3 6a3 3 0 006 0zM19 7l-3 6a3 3 0 006 0z' },
+    { cat: 'transporte', label: 'Transporte', d: 'M2 7h12v9H2zM14 10h4l3 3v3h-7M6 19a2 2 0 100-4 2 2 0 000 4zM17 19a2 2 0 100-4 2 2 0 000 4z' },
+    { cat: 'diversos', label: 'Diversos', d: 'M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z' }
+  ];
+
+  // Encabezado
+  document.getElementById('f-avatar').textContent = SIAP.iniciales(c.nombre);
+  document.getElementById('f-nombre').textContent = c.nombre;
+  document.getElementById('f-chips').innerHTML =
+    '<span class="badge azul">Persona ' + esc(c.persona.toLowerCase()) + '</span>' +
+    '<span class="badge off">ID ' + c.id + '</span><span class="badge off">' + esc(c.grupo) + '</span>';
+  document.getElementById('f-campos').innerHTML = [['RFC', c.rfc], ['Vendedor', c.vendedor], ['Ejecutivo', c.ejecutivo], ['Cliente desde', c.desde]]
+    .map(function (f) { return '<div class="campo"><span>' + f[0] + '</span><b>' + esc(f[1]) + '</b></div>'; }).join('');
+
+  // Cartera por ramo (solo pólizas vigentes o por renovar)
+  var activas = c.polizas.filter(function (p) { return p.est !== 'off'; });
+  document.getElementById('f-total').innerHTML = activas.length + ' pólizas vigentes · <strong style="color: var(--texto)">' +
+    dinero(activas.reduce(function (a, p) { return a + p.prima; }, 0)) + '</strong>';
+  document.getElementById('f-ramos').innerHTML = RAMOS.map(function (r) {
+    var ps = activas.filter(function (p) { return p.cat === r.cat; });
+    var prima = ps.reduce(function (a, p) { return a + p.prima; }, 0);
+    var detalle = ps.length ? ps.length + (ps.length === 1 ? ' póliza · ' : ' pólizas · ') + dinero(prima) : 'Sin pólizas';
+    return '<a class="ramo' + (ps.length ? '' : ' cero') + '" href="clientes.html"><span class="ramo-ico">' + icono(r.d, 22) + '</span>' +
+      '<span class="pila"><span style="font-size: 14px; font-weight: 600">' + r.label + '</span><span class="sub">' + detalle + '</span></span></a>';
+  }).join('');
+
+  // Documentos
+  document.getElementById('f-docs').innerHTML = c.documentos.map(function (d) {
+    return '<div class="doc"><span class="ramo-ico" style="width: 36px; height: 36px">' + icono(I.doc) + '</span>' +
+      '<div class="pila" style="flex: 1 1 auto"><span style="font-size: 14px; font-weight: 500">' + esc(d.nombre) + '</span><span class="sub">' + esc(d.detalle) + '</span></div>' +
+      '<span class="badge ' + d.estado + '">' + esc(d.etiqueta) + '</span>' +
+      '<button class="ico-btn" aria-label="Ver ' + esc(d.nombre) + '">' + icono(I.ver) + '</button></div>';
+  }).join('');
+  var pendiente = c.documentos.filter(function (d) { return d.estado === 'warn'; })[0];
+  if (pendiente) {
+    var aviso = document.getElementById('f-aviso');
+    aviso.hidden = false;
+    aviso.textContent = pendiente.nombre + ': ' + pendiente.etiqueta.toLowerCase() + '. Se puede pedir al cliente desde aquí.';
+  }
+
+  // Direcciones
+  document.getElementById('f-direcciones').innerHTML = c.direcciones.map(function (d) {
+    return '<tr><td style="font-weight: 500">' + esc(d.calle) + '</td><td>' + esc(d.ext) + '</td><td>' + esc(d.int) + '</td>' +
+      '<td>' + esc(d.colonia) + '</td><td>' + esc(d.municipio) + '</td><td class="num">' + esc(d.cp) + '</td><td class="der">' +
+      '<button class="ico-btn" aria-label="Enviar mensajería a esta dirección" title="Mensajería">' + icono(I.mensajeria) + '</button>' +
+      '<button class="ico-btn" aria-label="Editar dirección" title="Editar">' + icono(I.editar) + '</button>' +
+      '<button class="ico-btn peligro" aria-label="Eliminar dirección" title="Eliminar">' + icono(I.borrar) + '</button></td></tr>';
+  }).join('');
+
+  // Pestañas: contactos, tarjetas, portales
+  var PEST = [
+    { k: 'contactos', label: 'Contactos', agregar: 'Agregar contacto' },
+    { k: 'tarjetas', label: 'Tarjetas', agregar: 'Agregar tarjeta' },
+    { k: 'portales', label: 'Portales', agregar: 'Agregar portal' }
+  ];
+  var estado = { pestana: 'contactos', principal: c.principal };
+
+  function panelContactos() {
+    var tarjetas = c.contactos.map(function (ct) {
+      var correos = ct.correos.map(function (m) {
+        return '<div class="dato"><span style="color: var(--gris)">' + icono(I.correo, 16) + '</span><a href="mailto:' + esc(m) + '">' + esc(m) + '</a></div>';
+      }).join('');
+      var tels = ct.tels.map(function (t) {
+        return '<div class="dato"><span style="color: var(--gris)">' + icono(I.tel, 16) + '</span><span class="num">' + esc(t.num) + '</span>' +
+          '<span class="sub">' + esc(t.ext) + '</span><span class="badge off">' + esc(t.tipo) + '</span></div>';
+      }).join('');
+      return '<div class="contacto-card"><div class="cab"><div class="ini" style="width: 40px; height: 40px; font-size: 14px">' + SIAP.iniciales(ct.nombre) + '</div>' +
+        '<div class="pila" style="flex: 1 1 auto"><span style="font-size: 15px; font-weight: 600">' + esc(ct.nombre) + '</span><span class="sub">' + esc(ct.puesto) + '</span></div>' +
+        '<button class="ico-btn" aria-label="Editar contacto">' + icono(I.editar, 17) + '</button>' +
+        '<button class="ico-btn peligro" aria-label="Eliminar contacto">' + icono(I.borrar, 17) + '</button></div>' +
+        '<div class="datos">' + correos + tels + '</div></div>';
+    }).join('');
+    var cobranza = c.cobranza.map(function (m) {
+      var on = m === estado.principal;
+      return '<div class="cobranza-fila"><span>' + esc(m) + '</span>' +
+        '<button class="ico-btn estrella' + (on ? ' on' : '') + '" data-correo="' + esc(m) + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Correo principal' : 'Marcar como principal') + '">' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="' + (on ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="' + I.estrella + '"></path></svg></button>' +
+        '<button class="ico-btn peligro" aria-label="Quitar correo de cobranza">' + icono(I.borrar, 17) + '</button></div>';
+    }).join('');
+    return '<div class="fila" style="padding: 20px 22px; gap: 20px"><div class="contactos-grid">' + tarjetas + '</div>' +
+      '<aside class="cobranza" aria-label="Cobranza automática"><h3 style="font-size: 15px">Cobranza automática</h3>' +
+      '<p>Correos que reciben avisos de pago. La estrella marca el principal.</p>' + cobranza + '</aside></div>';
+  }
+
+  function panelTarjetas() {
+    if (!c.tarjetas.length) return '<div class="vacio">Este cliente no tiene tarjetas registradas.</div>';
+    return '<div class="scroll-x"><table><thead><tr><th>Tarjeta</th><th>Banco</th><th>Titular</th><th>Vence</th><th>Pólizas domiciliadas</th><th></th></tr></thead><tbody>' +
+      c.tarjetas.map(function (t) {
+        var pols = t.polizas.length ? t.polizas.map(function (p) { return '<span class="badge azul">' + esc(p) + '</span>'; }).join(' ') : '<span class="sub">Ninguna</span>';
+        return '<tr><td style="font-weight: 500">' + esc(t.tarjeta) + '</td><td>' + esc(t.banco) + '</td><td>' + esc(t.titular) + '</td><td class="num">' + esc(t.vence) + '</td>' +
+          '<td>' + pols + '</td><td class="der"><button class="ico-btn peligro" aria-label="Eliminar ' + esc(t.tarjeta) + '">' + icono(I.borrar, 17) + '</button></td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  function panelPortales() {
+    if (!c.portales.length) return '<div class="vacio">Este cliente no tiene portales registrados.</div>';
+    return '<div class="scroll-x"><table><thead><tr><th>Aseguradora</th><th>Portal</th><th>Usuario</th><th>Contraseña</th><th>Actualizado</th></tr></thead><tbody>' +
+      c.portales.map(function (p) {
+        return '<tr><td style="font-weight: 500">' + esc(p.aseguradora) + '</td><td>' + esc(p.portal) + '</td><td>' + esc(p.usuario) + '</td>' +
+          '<td><span style="letter-spacing: .2em">••••••••</span> <button class="btn chico" style="margin-left: 8px">Mostrar</button></td>' +
+          '<td class="sub">' + esc(p.actualizado) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  function pintarPestanas() {
+    var actual = PEST.filter(function (p) { return p.k === estado.pestana; })[0];
+    document.getElementById('f-pestanas').innerHTML = PEST.map(function (p) {
+      var on = p.k === estado.pestana;
+      return '<button role="tab" class="tab' + (on ? ' on' : '') + '" aria-selected="' + on + '" data-k="' + p.k + '">' + p.label + '</button>';
+    }).join('');
+    document.getElementById('f-agregar').innerHTML = icono(I.mas, 15) + ' ' + actual.agregar;
+    document.getElementById('f-panel').innerHTML =
+      estado.pestana === 'contactos' ? panelContactos() : estado.pestana === 'tarjetas' ? panelTarjetas() : panelPortales();
+  }
+
+  document.getElementById('f-pestanas').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-k]');
+    if (!b) return;
+    estado.pestana = b.dataset.k;
+    pintarPestanas();
+  });
+  document.getElementById('f-panel').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-correo]');
+    if (!b) return;
+    estado.principal = b.dataset.correo;
+    pintarPestanas();
+  });
+
+  pintarPestanas();
+})();
+</script>
+</body>
+</html>
