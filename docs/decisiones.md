@@ -5,7 +5,9 @@
 - **Estilo visual:** limpio, inspirado en el panel de LatePoint (Cure Lashes). Fondo gris claro, tarjetas blancas, azul `#1F5F99` como color principal (confirmado: se queda el azul, no el naranja del logo).
 - **Menú lateral:** el mismo orden de SIAP (Comercial, Operaciones, Administración). Se contrae a solo íconos con el botón ☰ y recuerda la preferencia del usuario.
 - **Pantalla de clientes:** la misma lógica de SIAP. Buscador arriba, contratantes con sus contactos y, abajo, las pólizas por ramo con el switch "Solo vigentes". El recuadro de pólizas se estira hasta abajo de la pantalla.
-- **Ficha del cliente:** página completa (no ventana flotante), con regreso a Clientes. Se abre dando clic en el nombre del contratante o con la flecha › del renglón.
+- **Ancho completo:** las páginas usan todo el ancho de la pantalla (sin límite), para aprovechar monitores grandes.
+- **Tabla de contratantes:** solo ID, contratante, RFC, ejecutivo y pólizas vigentes (sin grupo ni flecha). Siempre cabe: los nombres largos bajan de renglón en vez de mostrar barra horizontal. La búsqueda sigue encontrando por grupo.
+- **Ficha del cliente:** página completa (no ventana flotante), con regreso a Clientes. Se abre dando clic en el nombre del contratante.
 - **Contactos:** una tarjeta por persona con todos sus correos y teléfonos juntos, en lugar de tres listas separadas.
 - **Cobranza automática:** lista de correos con estrella para marcar el principal.
 

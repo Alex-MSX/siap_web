@@ -56,17 +56,15 @@
       <!-- Contratantes + contactos -->
       <div class="fila">
         <section class="tarjeta sin-pad" style="flex: 2 1 560px; min-width: 0" aria-label="Contratantes">
-          <div class="scroll-x">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width: 70px">ID</th><th>Contratante</th><th>RFC</th><th>Grupo</th><th>Ejecutivo</th>
-                  <th class="der">Pólizas</th><th style="width: 52px"><span class="sr">Ficha</span></th>
-                </tr>
-              </thead>
-              <tbody id="tabla-clientes"></tbody>
-            </table>
-          </div>
+          <table class="ajusta">
+            <thead>
+              <tr>
+                <th style="width: 80px">ID</th><th>Contratante</th><th style="width: 160px">RFC</th>
+                <th style="width: 160px">Ejecutivo</th><th class="der" style="width: 140px">Pólizas vigentes</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-clientes"></tbody>
+          </table>
           <div id="sin-clientes" class="vacio" hidden>Sin resultados para esa búsqueda.</div>
         </section>
 
@@ -150,14 +148,12 @@
 
     // Contratantes
     document.getElementById('tabla-clientes').innerHTML = lista.map(function (c) {
-      var ficha = 'ficha.html?id=' + c.id;
+      var vigentes = c.polizas.filter(function (p) { return p.est !== 'off'; }).length;
       return '<tr class="clic' + (c.id === sel.id ? ' on' : '') + '" data-id="' + c.id + '">' +
         '<td class="num" style="color: var(--gris)">' + c.id + '</td>' +
-        '<td><a class="liga-cliente" href="' + ficha + '">' + esc(c.nombre) + '</a></td>' +
-        '<td class="num">' + esc(c.rfc) + '</td><td>' + esc(c.grupo) + '</td><td>' + esc(c.ejecutivo) + '</td>' +
-        '<td class="der num">' + c.polizas.length + '</td>' +
-        '<td class="der" style="padding: 4px 12px"><a class="ico-btn" href="' + ficha + '" aria-label="Abrir ficha de ' + esc(c.nombre) + '" title="Abrir ficha">' +
-        SIAP.icono('M9 6l6 6-6 6') + '</a></td></tr>';
+        '<td class="envuelve"><a class="liga-cliente" href="ficha.html?id=' + c.id + '">' + esc(c.nombre) + '</a></td>' +
+        '<td class="num">' + esc(c.rfc) + '</td><td class="envuelve">' + esc(c.ejecutivo) + '</td>' +
+        '<td class="der num">' + vigentes + '</td></tr>';
     }).join('');
     document.getElementById('sin-clientes').hidden = lista.length > 0;
 
