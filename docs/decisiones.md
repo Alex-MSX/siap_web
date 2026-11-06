@@ -8,7 +8,8 @@
 - **Ancho completo:** las páginas usan todo el ancho de la pantalla (sin límite), para aprovechar monitores grandes.
 - **Tabla de contratantes:** solo ID, contratante, RFC, ejecutivo y pólizas vigentes (sin grupo ni flecha). Siempre cabe: los nombres largos bajan de renglón en vez de mostrar barra horizontal. La búsqueda sigue encontrando por grupo.
 - **Ficha del cliente:** página completa (no ventana flotante), con regreso a Clientes. Igual que en SIAP: un clic en la fila selecciona al cliente (cambian contactos, resumen y pólizas) y doble clic en cualquier parte de la fila abre su ficha. También se abre con "Ver ficha del cliente →" del recuadro de pólizas, útil en celular o tablet.
-- **Contactos:** una tarjeta por persona con todos sus correos y teléfonos juntos, en lugar de tres listas separadas.
+- **Contactos en la ficha:** lista compacta a la izquierda (nombre y puesto, separados por una línea gris fina, con buscador y altura fija con su propio scroll) y, al seleccionar uno, su tarjeta con todos sus correos y teléfonos. Funciona igual con 3 que con 50 contactos. Un icono de recibo en la lista marca a quien recibe cobranza automática.
+- **Contactos en Clientes:** se muestran los primeros 4 y un enlace "N contactos más en la ficha".
 - **Cobranza automática:** lista de correos con estrella para marcar el principal.
 
 ## Agregados al diseño (para validar)

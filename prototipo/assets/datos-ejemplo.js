@@ -11,8 +11,21 @@ var SIAP_DATOS = {
       id: 3038, nombre: 'CONSTRUCTORA DEL VALLE SA DE CV', rfc: 'CVA0905128K3', grupo: 'GRUPO VALLE',
       persona: 'Moral', vendedor: 'Ernesto Lugo Rivas', ejecutivo: 'Sofía Ramírez', desde: '2011',
       contactos: [
-        { nombre: 'Laura Méndez Ruiz', puesto: 'Administración', correos: ['lmendez@cvalle.mx'], tels: [{ num: '55 1234 5678', ext: 'ext. 210', tipo: 'Oficina' }] },
-        { nombre: 'Jorge Valle Ortega', puesto: 'Director general', correos: ['jvalle@cvalle.mx'], tels: [{ num: '55 8765 4321', ext: '', tipo: 'Celular' }] }
+        { nombre: 'Jorge Valle Ortega', puesto: 'Director general', correos: ['jvalle@cvalle.mx'], tels: [{ num: '55 8765 4321', ext: '', tipo: 'Celular' }] },
+        { nombre: 'Laura Méndez Ruiz', puesto: 'Administración', correos: ['lmendez@cvalle.mx', 'pagos@cvalle.mx'], tels: [{ num: '55 1234 5678', ext: 'ext. 210', tipo: 'Oficina' }, { num: '55 7788 9900', ext: '', tipo: 'Celular' }] },
+        { nombre: 'Orlando García Cárdenas', puesto: 'Director de finanzas', correos: ['ogarcia@cvalle.mx'], tels: [{ num: '55 1234 5678', ext: 'ext. 101', tipo: 'Oficina' }] },
+        { nombre: 'Susana Chicato Andrés', puesto: 'Caja', correos: ['schicato@cvalle.mx'], tels: [{ num: '55 1234 5678', ext: 'ext. 230', tipo: 'Oficina' }] },
+        { nombre: 'Manuel Ortiz Reyes', puesto: 'Caja', correos: ['mortiz@cvalle.mx'], tels: [{ num: '55 1234 5678', ext: 'ext. 231', tipo: 'Oficina' }] },
+        { nombre: 'Esmeralda Jaimes López', puesto: 'Recursos humanos', correos: ['ejaimes@cvalle.mx'], tels: [{ num: '55 4433 2211', ext: '', tipo: 'Celular' }] },
+        { nombre: 'Daniel Gómez Astivia', puesto: 'Compras', correos: ['dgomez@cvalle.mx'], tels: [{ num: '55 1234 5678', ext: 'ext. 240', tipo: 'Oficina' }] },
+        { nombre: 'Marina Tapia García', puesto: 'Asistente de dirección', correos: ['mtapia@cvalle.mx'], tels: [{ num: '55 1234 5678', ext: 'ext. 102', tipo: 'Oficina' }] },
+        { nombre: 'Pilar Gutiérrez Soto', puesto: 'Contabilidad', correos: ['pgutierrez@cvalle.mx'], tels: [{ num: '55 1234 5678', ext: 'ext. 250', tipo: 'Oficina' }] },
+        { nombre: 'Alicia Pérez Acevedo', puesto: 'Procurement and policy manager', correos: ['aperez@cvalle.mx'], tels: [{ num: '55 9988 7766', ext: '', tipo: 'Celular' }] },
+        { nombre: 'Víctor Vallados Valle', puesto: 'Compras', correos: ['vvallados@cvalle.mx'], tels: [{ num: '55 1234 5678', ext: 'ext. 241', tipo: 'Oficina' }] },
+        { nombre: 'Karla de la Torre Gloria', puesto: '', correos: ['kdelatorre@cvalle.mx'], tels: [{ num: '55 6655 4433', ext: '', tipo: 'Celular' }] },
+        { nombre: 'Claudia Moreno Ruiz', puesto: 'Jurídico', correos: ['cmoreno@cvalle.mx'], tels: [{ num: '55 1234 5678', ext: 'ext. 260', tipo: 'Oficina' }] },
+        { nombre: 'María Yolanda Gutiérrez Fernández', puesto: 'Asistente servicios generales', correos: ['mygutierrez@cvalle.mx'], tels: [{ num: '55 1234 5678', ext: 'ext. 270', tipo: 'Oficina' }] },
+        { nombre: 'Ana Stephanie Macías Valadez', puesto: 'Flotilla', correos: ['amacias@cvalle.mx'], tels: [{ num: '55 3322 1100', ext: '', tipo: 'Celular' }] }
       ],
       cobranza: ['lmendez@cvalle.mx', 'pagos@cvalle.mx'], principal: 'pagos@cvalle.mx',
       documentos: [

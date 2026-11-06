@@ -135,6 +135,24 @@ table.ajusta td.envuelve { white-space: normal; word-break: break-word; }
 .ramo.cero .ramo-ico { background: var(--off-bg); color: #6B7584; }
 .doc { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--linea); }
 .aviso { margin-top: 10px; padding: 12px 14px; border-radius: 10px; background: #FFF8EE; font-size: 13px; color: #7A3B00; }
+/* Contactos: lista compacta + tarjeta del seleccionado */
+.ct-zona { display: flex; flex-wrap: wrap; align-items: stretch; }
+.ct-lista { flex: 0 1 300px; min-width: 240px; border-right: 1px solid var(--borde); display: flex; flex-direction: column; }
+.ct-buscar { position: relative; padding: 12px 14px; border-bottom: 1px solid var(--linea); }
+.ct-buscar svg { position: absolute; left: 26px; top: 23px; color: var(--gris); }
+.ct-buscar input { width: 100%; min-height: 38px; padding: 0 12px 0 36px; border: 1px solid #D5DBE3; border-radius: 8px; font: inherit; font-size: 14px; color: var(--texto); background: var(--blanco); }
+.ct-buscar input:focus { outline: none; border-color: var(--azul); }
+.ct-renglones { height: 340px; overflow-y: auto; }
+.ct-renglon { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border: 0; border-bottom: 1px solid var(--linea); background: transparent; text-align: left; cursor: pointer; color: var(--texto); }
+.ct-renglon:hover { background: #F7F9FC; }
+.ct-renglon.on { background: #EAF2FB; }
+.ct-renglon.on .ct-nombre { color: var(--azul-osc); }
+.ct-renglon .ini { width: 32px; height: 32px; font-size: 12px; }
+.ct-nombre, .ct-puesto { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-nombre { font-size: 14px; font-weight: 500; }
+.ct-puesto { font-size: 12px; color: var(--gris); }
+.ct-detalle { flex: 1 1 360px; min-width: 0; padding: 20px 22px; }
+.ct-lateral { flex: 0 1 320px; min-width: 260px; padding: 20px 22px 20px 0; }
 .contactos-grid { flex: 2 1 520px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; align-content: start; }
 .contacto-card { border: 1px solid var(--borde); border-radius: 12px; padding: 16px 18px; }
 .contacto-card .cab { display: flex; align-items: center; gap: 12px; }

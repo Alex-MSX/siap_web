@@ -131,6 +131,7 @@
     mensajeria: 'M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a2 2 0 100-4 2 2 0 000 4zM17 19a2 2 0 100-4 2 2 0 000 4z',
     doc: 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h4',
     mas: 'M12 5v14M5 12h14',
+    recibo: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3',
     estrella: 'M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z'
   };
 
@@ -195,23 +196,55 @@
     { k: 'tarjetas', label: 'Tarjetas', agregar: 'Agregar tarjeta' },
     { k: 'portales', label: 'Portales', agregar: 'Agregar portal' }
   ];
-  var estado = { pestana: 'contactos', principal: c.principal };
+  var estado = { pestana: 'contactos', principal: c.principal, contacto: 0, qContacto: '' };
+
+  // ¿Alguno de los correos del contacto recibe cobranza automática?
+  function recibeCobranza(ct) {
+    return ct.correos.some(function (m) { return c.cobranza.indexOf(m) >= 0; });
+  }
+
+  // Lista compacta de contactos (se redibuja al buscar o seleccionar, sin tocar el buscador)
+  function pintarListaContactos() {
+    var q = estado.qContacto.toLowerCase().trim();
+    var filtrados = c.contactos.map(function (ct, i) { return { ct: ct, i: i }; }).filter(function (x) {
+      return !q || (x.ct.nombre + ' ' + x.ct.puesto).toLowerCase().indexOf(q) >= 0;
+    });
+    var cont = document.getElementById('ct-renglones');
+    if (!cont) return;
+    cont.innerHTML = filtrados.length ? filtrados.map(function (x) {
+      var on = x.i === estado.contacto;
+      return '<button class="ct-renglon' + (on ? ' on' : '') + '" data-i="' + x.i + '" aria-pressed="' + on + '">' +
+        '<span class="ini">' + SIAP.iniciales(x.ct.nombre) + '</span>' +
+        '<span style="flex: 1 1 auto; min-width: 0"><span class="ct-nombre">' + esc(x.ct.nombre) + '</span><span class="ct-puesto">' + esc(x.ct.puesto || 'Sin puesto') + '</span></span>' +
+        (recibeCobranza(x.ct) ? '<span style="color: var(--gris)" title="Recibe cobranza automática" aria-label="Recibe cobranza automática">' + icono(I.recibo, 16) + '</span>' : '') +
+        '</button>';
+    }).join('') : '<div class="vacio">Sin contactos con ese nombre o puesto.</div>';
+  }
+
+  // Tarjeta del contacto seleccionado
+  function pintarDetalleContacto() {
+    var ct = c.contactos[estado.contacto];
+    var det = document.getElementById('ct-detalle');
+    if (!det || !ct) return;
+    var correos = ct.correos.map(function (m) {
+      return '<div class="dato"><span style="color: var(--gris)">' + icono(I.correo, 16) + '</span><a href="mailto:' + esc(m) + '">' + esc(m) + '</a></div>';
+    }).join('');
+    var tels = ct.tels.map(function (t) {
+      return '<div class="dato"><span style="color: var(--gris)">' + icono(I.tel, 16) + '</span><span class="num">' + esc(t.num) + '</span>' +
+        '<span class="sub">' + esc(t.ext) + '</span><span class="badge off">' + esc(t.tipo) + '</span></div>';
+    }).join('');
+    det.innerHTML = '<div class="contacto-card" style="border: 0; padding: 0"><div class="cab">' +
+      '<div class="ficha-avatar" style="width: 48px; height: 48px; font-size: 16px">' + SIAP.iniciales(ct.nombre) + '</div>' +
+      '<div class="pila" style="flex: 1 1 auto"><span style="font-size: 17px; font-weight: 600">' + esc(ct.nombre) + '</span><span class="sub">' + esc(ct.puesto || 'Sin puesto') + '</span></div>' +
+      '<button class="ico-btn" aria-label="Editar contacto">' + icono(I.editar, 17) + '</button>' +
+      '<button class="ico-btn peligro" aria-label="Eliminar contacto">' + icono(I.borrar, 17) + '</button></div>' +
+      '<div class="datos" style="margin-top: 16px">' + correos + tels + '</div>' +
+      '<button class="btn chico" style="margin-top: 10px">' + icono(I.mas, 15) + ' Agregar correo o teléfono</button>' +
+      (recibeCobranza(ct) ? '<p class="sub" style="display: flex; align-items: center; gap: 6px; margin: 16px 0 0">' + icono(I.recibo, 16) + 'Este contacto recibe los avisos de cobranza automática.</p>' : '') +
+      '</div>';
+  }
 
   function panelContactos() {
-    var tarjetas = c.contactos.map(function (ct) {
-      var correos = ct.correos.map(function (m) {
-        return '<div class="dato"><span style="color: var(--gris)">' + icono(I.correo, 16) + '</span><a href="mailto:' + esc(m) + '">' + esc(m) + '</a></div>';
-      }).join('');
-      var tels = ct.tels.map(function (t) {
-        return '<div class="dato"><span style="color: var(--gris)">' + icono(I.tel, 16) + '</span><span class="num">' + esc(t.num) + '</span>' +
-          '<span class="sub">' + esc(t.ext) + '</span><span class="badge off">' + esc(t.tipo) + '</span></div>';
-      }).join('');
-      return '<div class="contacto-card"><div class="cab"><div class="ini" style="width: 40px; height: 40px; font-size: 14px">' + SIAP.iniciales(ct.nombre) + '</div>' +
-        '<div class="pila" style="flex: 1 1 auto"><span style="font-size: 15px; font-weight: 600">' + esc(ct.nombre) + '</span><span class="sub">' + esc(ct.puesto) + '</span></div>' +
-        '<button class="ico-btn" aria-label="Editar contacto">' + icono(I.editar, 17) + '</button>' +
-        '<button class="ico-btn peligro" aria-label="Eliminar contacto">' + icono(I.borrar, 17) + '</button></div>' +
-        '<div class="datos">' + correos + tels + '</div></div>';
-    }).join('');
     var cobranza = c.cobranza.map(function (m) {
       var on = m === estado.principal;
       return '<div class="cobranza-fila"><span>' + esc(m) + '</span>' +
@@ -219,9 +252,14 @@
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="' + (on ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="' + I.estrella + '"></path></svg></button>' +
         '<button class="ico-btn peligro" aria-label="Quitar correo de cobranza">' + icono(I.borrar, 17) + '</button></div>';
     }).join('');
-    return '<div class="fila" style="padding: 20px 22px; gap: 20px"><div class="contactos-grid">' + tarjetas + '</div>' +
-      '<aside class="cobranza" aria-label="Cobranza automática"><h3 style="font-size: 15px">Cobranza automática</h3>' +
-      '<p>Correos que reciben avisos de pago. La estrella marca el principal.</p>' + cobranza + '</aside></div>';
+    return '<div class="ct-zona">' +
+      '<div class="ct-lista"><div class="ct-buscar">' + icono('M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-3.5-3.5', 16) +
+      '<label for="ct-q" class="sr">Buscar contacto</label>' +
+      '<input id="ct-q" type="search" placeholder="Buscar por nombre o puesto" autocomplete="off" value="' + esc(estado.qContacto) + '"></div>' +
+      '<div id="ct-renglones" class="ct-renglones"></div></div>' +
+      '<div id="ct-detalle" class="ct-detalle"></div>' +
+      '<div class="ct-lateral"><aside class="cobranza" aria-label="Cobranza automática"><h3 style="font-size: 15px">Cobranza automática</h3>' +
+      '<p>Correos que reciben avisos de pago. La estrella marca el principal.</p>' + cobranza + '</aside></div></div>';
   }
 
   function panelTarjetas() {
@@ -253,6 +291,10 @@
     document.getElementById('f-agregar').innerHTML = icono(I.mas, 15) + ' ' + actual.agregar;
     document.getElementById('f-panel').innerHTML =
       estado.pestana === 'contactos' ? panelContactos() : estado.pestana === 'tarjetas' ? panelTarjetas() : panelPortales();
+    if (estado.pestana === 'contactos') {
+      pintarListaContactos();
+      pintarDetalleContacto();
+    }
   }
 
   document.getElementById('f-pestanas').addEventListener('click', function (e) {
@@ -262,10 +304,22 @@
     pintarPestanas();
   });
   document.getElementById('f-panel').addEventListener('click', function (e) {
+    var renglon = e.target.closest('button.ct-renglon');
+    if (renglon) {
+      estado.contacto = Number(renglon.dataset.i);
+      pintarListaContactos();
+      pintarDetalleContacto();
+      return;
+    }
     var b = e.target.closest('button[data-correo]');
     if (!b) return;
     estado.principal = b.dataset.correo;
     pintarPestanas();
+  });
+  document.getElementById('f-panel').addEventListener('input', function (e) {
+    if (e.target.id !== 'ct-q') return;
+    estado.qContacto = e.target.value;
+    pintarListaContactos();
   });
 
   pintarPestanas();

@@ -166,13 +166,18 @@
     }
 
     // Contactos
-    document.getElementById('lista-contactos').innerHTML = sel.contactos.map(function (ct) {
+    var MAX_CONTACTOS = 4;
+    var resto = sel.contactos.length - MAX_CONTACTOS;
+    document.getElementById('lista-contactos').innerHTML = sel.contactos.slice(0, MAX_CONTACTOS).map(function (ct) {
       var tel = ct.tels[0] ? ct.tels[0].num : '';
       return '<div class="contacto"><div class="ini">' + SIAP.iniciales(ct.nombre) + '</div><div class="pila">' +
         '<span style="font-size: 14px; font-weight: 500">' + esc(ct.nombre) + '</span>' +
         '<span class="sub">' + esc(ct.puesto) + '</span>' +
         '<span style="font-size: 13px; color: var(--texto-2)">' + esc(tel) + ' · ' + esc(ct.correos[0] || '') + '</span></div></div>';
-    }).join('');
+    }).join('') + (resto > 0
+      ? '<a href="ficha.html?id=' + sel.id + '" style="display: block; padding-top: 12px; border-top: 1px solid var(--linea); font-size: 14px; font-weight: 600; text-decoration: none">' +
+        resto + ' contacto' + (resto === 1 ? '' : 's') + ' más en la ficha →</a>'
+      : '');
 
     // Indicadores
     var activas = sel.polizas.filter(function (p) { return p.est !== 'off'; });
