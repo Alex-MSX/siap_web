@@ -208,6 +208,13 @@ table.ajusta td.envuelve { white-space: normal; word-break: break-word; }
 .select:disabled { background: #F4F6F9; color: var(--texto-2); }
 .bitacora-nueva { display: flex; gap: 10px; margin-bottom: 8px; }
 
+/* Aviso de domiciliación */
+.aviso-dom { display: flex; gap: 14px; align-items: flex-start; margin-top: 18px; padding: 14px 16px; border-radius: 12px; background: #FFF4E5; border: 1px solid #F7C98B; color: #7A3B00; font-size: 14px; line-height: 1.5; }
+.aviso-dom svg { flex: 0 0 auto; margin-top: 1px; color: #C2410C; }
+.aviso-dom strong { font-size: 15px; }
+.badge.dom { margin-top: 4px; background: #FFF4E5; color: #9A3412; font-weight: 600; }
+.solo-lectura { min-height: 38px; display: flex; align-items: center; padding: 8px 12px; border: 1px solid var(--borde); border-radius: 8px; background: #F4F6F9; font-size: 14px; color: var(--texto-2); }
+
 /* Ventana de diálogo (No renovar) */
 .dialogo { width: min(620px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 16px; box-shadow: 0 24px 48px rgba(16, 24, 40, .18); color: var(--texto); }
 .dialogo::backdrop { background: rgba(16, 24, 40, .45); }

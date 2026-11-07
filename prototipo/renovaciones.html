@@ -150,7 +150,8 @@
       return '<tr class="clic" data-num="' + esc(r.num) + '" title="Doble clic para abrir el proceso de renovación">' +
         '<td><span class="dias dias-' + r.rango.k + '"><span class="urg-punto" aria-hidden="true"></span>' + textoDias(r.dias) + '</span></td>' +
         '<td class="envuelve" style="font-weight: 500">' + esc(r.contratante) + '</td>' +
-        '<td class="envuelve num" style="color: var(--azul); font-weight: 600">' + esc(r.num) + '</td>' +
+        '<td class="envuelve num" style="color: var(--azul); font-weight: 600">' + esc(r.num) +
+          (r.domiciliacion ? '<br><span class="badge dom" title="' + (r.domiciliacion.estado === 'domiciliada' ? 'Domiciliada a ' : 'En proceso de domiciliarse a ') + esc(r.domiciliacion.tarjeta) + '">' + (r.domiciliacion.estado === 'domiciliada' ? 'Domiciliada' : 'Domiciliación en proceso') + '</span>' : '') + '</td>' +
         '<td class="envuelve">' + celdaRenovacion(r) + '</td>' +
         '<td class="num">' + r.fin + '</td>' +
         '<td class="envuelve">' + esc(r.ramo) + '</td>' +

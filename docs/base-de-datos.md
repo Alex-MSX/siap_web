@@ -102,11 +102,16 @@ Se usa `requiere_factura` explícito en lugar de dejar un campo vacío, para dis
 | 2. Contactos | Booleano | `contactos_confirmado_por` + `contactos_confirmado_en` (vacío = pendiente) |
 | 3. Direcciones | Booleano | `direcciones_confirmado_por` + `direcciones_confirmado_en` |
 | 4. Renovación | Booleano | Calculado: existe una póliza nueva no cancelada con `id_poliza_anterior` = esta |
-| 5. Forma de pago | Booleano | `forma_pago_renovacion` + `metodo_pago_renovacion` + quién y cuándo (se guarda la decisión, no solo que se tomó, y se usa al generar la orden) |
+| 5. Método de pago | Booleano | `metodo_pago_renovacion` + quién y cuándo (se guarda la decisión, no solo que se tomó). La forma de pago no va aquí: se pide en la orden de renovación, y un cambio posterior es una solicitud de cambio de forma de pago |
 | Cierre | Booleano que pone el código | Columna generada a partir de los 5 pasos, para que no se pueda desincronizar |
 
 - **Regla del panel:** proceso incompleto **y** estatus distinto de NO RENOVADA y CANCELADA.
 - Una tabla aparte `procesos_renovacion` (1 a 1 con la póliza) solo valdría la pena si se quiere guardar el historial de cada confirmación y su deshacer. Con un renglón por vigencia no es indispensable.
+
+### Dirección fiscal y domiciliación en el proceso
+
+- **Dirección fiscal:** en el paso de direcciones solo se valida; no se edita. Viene del perfil fiscal del cliente y cambia al cargar una nueva constancia de situación fiscal.
+- **Domiciliación:** si la póliza que se renueva está domiciliada (o en proceso de domiciliarse: tarjeta asignada sin endoso), la ficha del proceso muestra un aviso desde que se abre, y el panel de renovaciones marca la póliza. En gastos médicos y vida la domiciliación suele continuar en la renovación, así que un cambio que afecte la prima se debe detectar antes de generar la orden. Este aviso depende del estado de domiciliación de la póliza (ver el problema de fondo de domiciliación en SIAP: `catc` e `idtarjeta` pueden desincronizarse y están duplicados en pólizas y recibos; se revisará al diseñar pólizas y recibos).
 
 ### "No renovar"
 

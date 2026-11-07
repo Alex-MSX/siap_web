@@ -99,10 +99,11 @@ var SIAP_DATOS = {
   Renovaciones de EJEMPLO (inventadas). Pólizas cuyo fin de vigencia cae en los próximos 40 días
   o que ya vencieron sin renovarse. "num" coincide con una póliza de los clientes de ejemplo cuando existe.
   renovacion: { tipo: 'ot' (orden en trámite) | 'poliza' (ya hay póliza nueva) , folio } o null si no hay nada.
+  domiciliacion (opcional): { estado: 'domiciliada' | 'en_proceso' (tarjeta asignada, falta el endoso), tarjeta, banco }.
 */
 SIAP_DATOS.renovaciones = [
-  { contratante: 'ARMANDO RUIZ BECERRA', num: '278544', renovacion: { tipo: 'ot', folio: 'OT-202502928' }, fin: '02/12/2025', ramo: 'Vida individual', ejecutivo: 'Sofía Ramírez', prima: 1612.86, moneda: 'USD' },
-  { contratante: 'MARIANA TORRES ESCALANTE', num: 'VI0002541949/2025', renovacion: { tipo: 'poliza', folio: 'VI0002541949' }, fin: '08/07/2026', ramo: 'Vida individual', ejecutivo: 'Sofía Ramírez', prima: 8471.52, moneda: 'UDIS' },
+  { contratante: 'ARMANDO RUIZ BECERRA', num: '278544', domiciliacion: { estado: 'domiciliada', tarjeta: 'Visa •••• 2231', banco: 'BBVA' }, renovacion: { tipo: 'ot', folio: 'OT-202502928' }, fin: '02/12/2025', ramo: 'Vida individual', ejecutivo: 'Sofía Ramírez', prima: 1612.86, moneda: 'USD' },
+  { contratante: 'MARIANA TORRES ESCALANTE', num: 'VI0002541949/2025', domiciliacion: { estado: 'domiciliada', tarjeta: 'Mastercard •••• 7710', banco: 'Santander' }, renovacion: { tipo: 'poliza', folio: 'VI0002541949' }, fin: '08/07/2026', ramo: 'Vida individual', ejecutivo: 'Sofía Ramírez', prima: 8471.52, moneda: 'UDIS' },
   { contratante: 'FARMACIAS LA ESPERANZA SA DE CV', num: '5103756', renovacion: { tipo: 'ot', folio: 'OT-202601221' }, fin: '17/06/2026', ramo: 'Autos individual', ejecutivo: 'Marco Ibarra', prima: 15124.15, moneda: 'MXN' },
   { contratante: 'ESCUELA ACUÁTICA DELFINES SA DE CV', num: '4-SMK-10000241-14', renovacion: { tipo: 'ot', folio: 'OT-202602452' }, fin: '07/10/2026', ramo: 'Accidentes colectivo', ejecutivo: 'Sofía Ramírez', prima: 29788.32, moneda: 'MXN' },
   { contratante: 'GOBIERNO DEL ESTADO (MUSEO REGIONAL)', num: 'DOA003110000', renovacion: { tipo: 'ot', folio: 'OT-202601956' }, fin: '20/09/2026', ramo: 'Obras de arte', ejecutivo: 'Marco Ibarra', prima: 66000.00, moneda: 'MXN' },
@@ -115,7 +116,7 @@ SIAP_DATOS.renovaciones = [
   { contratante: 'TERMINAL PORTUARIA DEL PACÍFICO SA DE CV', num: '119-RCM-30000001-2', renovacion: null, fin: '31/10/2026', ramo: 'Responsabilidad civil', ejecutivo: 'Marco Ibarra', prima: 490000.00, moneda: 'USD' },
   { contratante: 'FIDEICOMISO VIVIENDA SOCIAL F/25811-1', num: '119-HFL-948-25', renovacion: { tipo: 'ot', folio: 'OT-202602291' }, fin: '01/11/2026', ramo: 'Incendio hipotecario', ejecutivo: 'Tomás Aguilar', prima: 0, moneda: 'MXN' },
   { contratante: 'GUSTAVO GUERRERO MARTÍNEZ', num: '693749160', renovacion: { tipo: 'poliza', folio: '758177570' }, fin: '01/11/2026', ramo: 'Autos individual', ejecutivo: 'Sofía Ramírez', prima: 4311.91, moneda: 'MXN' },
-  { contratante: 'MARÍA BEATRIZ PEREDA MARTÍNEZ', num: '10848718', renovacion: { tipo: 'poliza', folio: '10848719' }, fin: '06/11/2026', ramo: 'GMM familiar', ejecutivo: 'Marco Ibarra', prima: 174130.76, moneda: 'MXN' },
+  { contratante: 'MARÍA BEATRIZ PEREDA MARTÍNEZ', num: '10848718', domiciliacion: { estado: 'domiciliada', tarjeta: 'Amex •••• 1005', banco: 'American Express' }, renovacion: { tipo: 'poliza', folio: '10848719' }, fin: '06/11/2026', ramo: 'GMM familiar', ejecutivo: 'Marco Ibarra', prima: 174130.76, moneda: 'MXN' },
   { contratante: 'ORLANDO GARCÍA CÁRDENAS', num: '5240599', renovacion: { tipo: 'poliza', folio: '5537692' }, fin: '07/11/2026', ramo: 'Autos individual', ejecutivo: 'Sofía Ramírez', prima: 9411.05, moneda: 'MXN' },
   { contratante: 'SERVICIOS INTEGRALES PFRA S DE RL DE CV', num: '119-SBS-1444-9', renovacion: { tipo: 'ot', folio: 'OT-202602537' }, fin: '09/11/2026', ramo: 'Empresarial', ejecutivo: 'Marco Ibarra', prima: 22748.67, moneda: 'MXN' },
   { contratante: 'RETO METALMECÁNICA SA DE CV', num: '119-TRMM-214-1', renovacion: { tipo: 'poliza', folio: '119-TRMM-214-2' }, fin: '10/11/2026', ramo: 'Transportes', ejecutivo: 'Paola Núñez', prima: 2500.00, moneda: 'USD' },
@@ -126,7 +127,7 @@ SIAP_DATOS.renovaciones = [
   { contratante: 'CONSTRUCTORA DEL VALLE SA DE CV', num: 'RC-00921', renovacion: null, fin: '01/12/2026', ramo: 'Responsabilidad civil', ejecutivo: 'Sofía Ramírez', prima: 46880.00, moneda: 'MXN' },
   { contratante: 'MARÍA DEL CARMEN SEBA CAMACHO', num: '120-HFL-20000034-1', renovacion: { tipo: 'ot', folio: 'OT-202602612' }, fin: '04/12/2026', ramo: 'Hogar', ejecutivo: 'Tomás Aguilar', prima: 2703.14, moneda: 'MXN' },
   { contratante: 'EDGAR OMAR ESCAMILLA MERELES', num: '704372838', renovacion: { tipo: 'poliza', folio: '760898940' }, fin: '04/12/2026', ramo: 'Autos individual', ejecutivo: 'Sofía Ramírez', prima: 16004.71, moneda: 'MXN' },
-  { contratante: 'ERIKA HEGEWISCH CONROY', num: 'C9916018', renovacion: { tipo: 'ot', folio: 'OT-202602641' }, fin: '07/12/2026', ramo: 'GMM familiar', ejecutivo: 'Lucía Herrera', prima: 101571.79, moneda: 'MXN' },
+  { contratante: 'ERIKA HEGEWISCH CONROY', num: 'C9916018', domiciliacion: { estado: 'en_proceso', tarjeta: 'Visa •••• 4890', banco: 'Banorte' }, renovacion: { tipo: 'ot', folio: 'OT-202602641' }, fin: '07/12/2026', ramo: 'GMM familiar', ejecutivo: 'Lucía Herrera', prima: 101571.79, moneda: 'MXN' },
   { contratante: 'TRANSPORTES DEL VALLE NORTE SA DE CV', num: 'TRA-11873', renovacion: { tipo: 'ot', folio: 'OT-11873-2026' }, fin: '15/12/2026', ramo: 'Transporte de carga', ejecutivo: 'Marco Ibarra', prima: 74300.00, moneda: 'MXN' },
   { contratante: 'MARÍA DE LOS ÁNGELES CITERI TOLIBIA', num: '120-HFL-20000020-3', renovacion: null, fin: '13/12/2026', ramo: 'Hogar', ejecutivo: 'Sofía Ramírez', prima: 10748.99, moneda: 'MXN' }
 ];

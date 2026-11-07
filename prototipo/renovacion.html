@@ -56,6 +56,7 @@
             </button>
           </div>
         </div>
+        <div id="r-aviso-dom" class="aviso-dom" role="alert" hidden></div>
         <div id="r-campos" class="campos"></div>
       </section>
 
@@ -172,7 +173,9 @@
     renovacion: renovada ? { ok: true, por: 'Sistema', fecha: 'al capturar la póliza nueva' } : { ok: false },
     pago: { ok: false }
   };
-  var direccionRiesgo = 0, direccionFiscal = 0, metodoNuevo = '', formaNueva = '';
+  var direccionRiesgo = 0, direccionFiscal = 0, metodoNuevo = '';
+  var dom = ren.domiciliacion || null;
+  var metodoActual = dom && dom.estado === 'domiciliada' ? 'Domiciliado a tarjeta' : 'Agente';
   var bitacora = [
     ['14/09/2026', USUARIO, 'Se solicitaron cotizaciones de renovación a 8 aseguradoras a petición del cliente.'],
     ['15/09/2026', USUARIO, 'Contactos y direcciones confirmados con Lorena Vélez por teléfono.']
@@ -184,7 +187,7 @@
     { k: 'contactos', n: 2, label: 'Contactos', desc: 'Contactos del cliente actualizados' },
     { k: 'direcciones', n: 3, label: 'Direcciones', desc: 'Dirección de riesgo y fiscal correctas' },
     { k: 'renovacion', n: 4, label: 'Renovación', desc: 'Póliza renovada capturada' },
-    { k: 'pago', n: 5, label: 'Forma de pago', desc: 'Forma y método de pago de la próxima vigencia' }
+    { k: 'pago', n: 5, label: 'Método de pago', desc: 'Cómo pagará el cliente la próxima vigencia' }
   ];
   var EXTRAS = [
     { k: 'cotizaciones', label: 'Cotizaciones' }, { k: 'orden', label: 'Orden' }, { k: 'bitacora', label: 'Bitácora' }
@@ -209,6 +212,17 @@
   }
   var noRenovada = null; // { motivo, comentario, evidencia, por, fecha, canceladas: [] }
   pintarChips();
+
+  // Aviso de domiciliación: se ve en cuanto se abre la ficha
+  if (dom) {
+    var avisoDom = document.getElementById('r-aviso-dom');
+    avisoDom.hidden = false;
+    avisoDom.innerHTML = icono('M3 6h18v12H3zM3 10h18M7 15h4', 22) + '<div class="pila" style="gap: 4px">' +
+      (dom.estado === 'domiciliada'
+        ? '<strong>Esta póliza está domiciliada a ' + esc(dom.tarjeta) + ' (' + esc(dom.banco) + ')</strong>'
+        : '<strong>Esta póliza está en proceso de domiciliarse a ' + esc(dom.tarjeta) + ' (' + esc(dom.banco) + '): falta el endoso</strong>') +
+      '<span>La domiciliación puede seguir en la renovación, sobre todo en gastos médicos y vida. Si el cliente pide un cambio que afecte la prima, revísalo antes de generar la orden para que el cargo a la tarjeta sea el correcto.</span></div>';
+  }
   var verPoliza = document.getElementById('r-ver-poliza');
   if (poliza) verPoliza.href = 'poliza.html?num=' + encodeURIComponent(poliza.num); else verPoliza.hidden = true;
 
@@ -253,16 +267,16 @@
   }
 
   function panelDirecciones() {
-    var opciones = function (sel) {
-      return cliente.direcciones.map(function (d, i) { return '<option value="' + i + '"' + (i === sel ? ' selected' : '') + '>' + esc(textoDireccion(d)) + '</option>'; }).join('');
-    };
+    var opciones = cliente.direcciones.map(function (d, i) { return '<option value="' + i + '"' + (i === direccionRiesgo ? ' selected' : '') + '>' + esc(textoDireccion(d)) + '</option>'; }).join('');
     var bloqueado = pasos.direcciones.ok ? ' disabled' : '';
     return '<p class="sub" style="margin: 0 0 14px">Aquí se detectan los errores de facturación: confirma que la dirección de riesgo y la fiscal sean las correctas para la próxima vigencia.</p>' +
-      '<div class="dos-col">' +
-      '<label class="campo-form"><span>Dirección de riesgo</span><select class="select" data-dir="riesgo"' + bloqueado + '>' + opciones(direccionRiesgo) + '</select></label>' +
-      '<label class="campo-form"><span>Dirección fiscal (perfil fiscal del cliente)</span><select class="select" data-dir="fiscal"' + bloqueado + '>' + opciones(direccionFiscal) + '</select></label>' +
+      '<div class="pila" style="gap: 16px; max-width: 860px">' +
+      '<label class="campo-form"><span>Dirección de riesgo</span><select class="select" data-dir="riesgo"' + bloqueado + '>' + opciones + '</select></label>' +
+      '<div class="campo-form"><span>Dirección fiscal (perfil fiscal del cliente)</span>' +
+      '<div class="solo-lectura">' + esc(textoDireccion(cliente.direcciones[direccionFiscal])) + '</div>' +
+      '<span class="sub" style="font-weight: 400">Se actualiza al cargar una nueva constancia de situación fiscal (paso 1, Artículo 492). Si no es correcta, pide al cliente su constancia actualizada.</span></div>' +
       '</div>' +
-      (direccionRiesgo !== direccionFiscal ? '<p class="sub" style="margin: 10px 0 0">La dirección de riesgo y la fiscal son distintas. Es válido (por ejemplo, un auto que se factura a otra dirección), solo confírmalo con el cliente.</p>' : '') +
+      (direccionRiesgo !== direccionFiscal ? '<p class="sub" style="margin: 12px 0 0">La dirección de riesgo y la fiscal son distintas. Es válido (por ejemplo, un auto que se factura a otra dirección), solo confírmalo con el cliente.</p>' : '') +
       pieConfirmacion('direcciones', 'Confirmar direcciones');
   }
 
@@ -279,15 +293,18 @@
 
   function panelPago() {
     var bloqueado = pasos.pago.ok ? ' disabled' : '';
-    var op = function (lista, sel) { return '<option value="">Selecciona…</option>' + lista.map(function (x) { return '<option' + (x === sel ? ' selected' : '') + '>' + x + '</option>'; }).join(''); };
+    var opciones = '<option value="">Selecciona…</option>' + ['Agente', 'Domiciliado a tarjeta', 'Transferencia', 'Pago directo en aseguradora'].map(function (x) {
+      return '<option' + (x === metodoNuevo ? ' selected' : '') + '>' + x + '</option>';
+    }).join('');
+    var tarjeta = dom ? '<div class="campo"><span>Tarjeta</span><b>' + esc(dom.tarjeta) + ' · ' + esc(dom.banco) + '</b></div>' : '';
     return '<div class="dos-col">' +
       '<div class="tarjeta pad" style="background: #F7F9FC; border: 0"><h3 style="font-size: 15px; margin-bottom: 12px">Vigencia actual</h3>' +
-      '<div class="campos" style="margin: 0; padding: 0; border: 0"><div class="campo"><span>Forma de pago</span><b>Contado</b></div><div class="campo"><span>Método de pago</span><b>Agente</b></div></div></div>' +
-      '<div class="tarjeta pad"><h3 style="font-size: 15px; margin-bottom: 12px">Próxima vigencia</h3><div class="dos-col" style="gap: 14px">' +
-      '<label class="campo-form"><span>Forma de pago</span><select class="select" data-pago="forma"' + bloqueado + '>' + op(['Contado', 'Semestral', 'Trimestral', 'Mensual'], formaNueva) + '</select></label>' +
-      '<label class="campo-form"><span>Método de pago</span><select class="select" data-pago="metodo"' + bloqueado + '>' + op(['Agente', 'Domiciliado a tarjeta', 'Transferencia', 'Pago en aseguradora'], metodoNuevo) + '</select></label>' +
-      '</div></div></div>' +
-      (!pasos.pago.ok && !(formaNueva && metodoNuevo) ? '<p class="sub" style="margin: 12px 0 0">Elige forma y método de pago para poder confirmar.</p>' : pieConfirmacion('pago', 'Guardar forma de pago'));
+      '<div class="campos" style="margin: 0; padding: 0; border: 0"><div class="campo"><span>Método de pago</span><b>' + metodoActual + '</b></div>' + tarjeta + '</div></div>' +
+      '<div class="tarjeta pad"><h3 style="font-size: 15px; margin-bottom: 12px">Próxima vigencia</h3>' +
+      '<label class="campo-form"><span>Método de pago</span><select class="select" data-pago="metodo"' + bloqueado + '>' + opciones + '</select></label></div>' +
+      '</div>' +
+      '<p class="sub" style="margin: 12px 0 0">La forma de pago (contado, mensual, etc.) se pide al generar la orden de renovación. Si después el cliente quiere cambiarla, se hace con una solicitud de cambio de forma de pago.</p>' +
+      (!pasos.pago.ok && !metodoNuevo ? '<p class="sub" style="margin: 8px 0 0">Elige el método de pago para poder confirmar.</p>' : pieConfirmacion('pago', 'Confirmar método de pago'));
   }
 
   function panelCotizaciones() {
@@ -313,7 +330,7 @@
       return '<div class="tarjeta sin-pad"><table class="ajusta"><thead><tr><th style="width: 220px">Orden</th><th>Concepto</th><th style="width: 130px">Fecha</th><th style="width: 140px">Estatus</th></tr></thead><tbody>' +
         '<tr><td class="num" style="font-weight: 600">' + esc(ren.renovacion.folio) + '</td><td>' + esc(ren.ramo) + ' · renovación</td><td class="num">26/09/2026</td><td>' + estatus + '</td></tr></tbody></table></div>';
     }
-    return '<div class="pila" style="gap: 12px; align-items: flex-start"><p class="sub" style="margin: 0">Genera la orden de trabajo para que la aseguradora emita la renovación. Se crea con los datos de esta póliza, las direcciones confirmadas y la forma de pago elegida.</p>' +
+    return '<div class="pila" style="gap: 12px; align-items: flex-start"><p class="sub" style="margin: 0">Genera la orden de trabajo para que la aseguradora emita la renovación. Se crea con los datos de esta póliza y las direcciones confirmadas. Aquí se indica la forma de pago que se pide para la renovación.</p>' +
       '<button class="btn primario">' + icono('M12 5v14M5 12h14', 16) + ' Generar orden de renovación</button></div>';
   }
 
@@ -429,7 +446,6 @@
     if (!t.dataset.dir && !t.dataset.pago) return; // otros campos (como la bitácora) no redibujan
     if (t.dataset.dir === 'riesgo') direccionRiesgo = +t.value;
     if (t.dataset.dir === 'fiscal') direccionFiscal = +t.value;
-    if (t.dataset.pago === 'forma') formaNueva = t.value;
     if (t.dataset.pago === 'metodo') metodoNuevo = t.value;
     pintar();
   });
