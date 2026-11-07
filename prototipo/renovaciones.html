@@ -35,7 +35,7 @@
       <div class="tarjeta-cab" style="align-items: flex-end">
         <div class="pila" style="gap: 4px">
           <h1 style="font-size: 28px">Renovaciones</h1>
-          <span class="sub" style="font-size: 14px">Pólizas que vencen en los próximos 40 días y vencidas sin renovar</span>
+          <span class="sub" style="font-size: 14px">Procesos de renovación abiertos: pólizas que vencen en los próximos 40 días o ya vencidas cuyo proceso no ha terminado</span>
         </div>
         <!-- Solo para el prototipo: en la versión real la vista depende del rol del usuario -->
         <div class="segmento" role="group" aria-label="Vista del prototipo">
@@ -60,7 +60,6 @@
               <select id="r-ejec" class="select"></select>
             </label>
           </div>
-          <label class="switch"><input id="r-ocultar" type="checkbox"> Ocultar ya renovadas</label>
         </div>
         <table class="ajusta">
           <thead id="r-cabecera"></thead>
@@ -86,7 +85,7 @@
 
   // Rangos de urgencia (los mismos colores que SIAP)
   var RANGOS = [
-    { k: 'vencida', label: 'Vencidas sin renovar', desc: 'Ya pasó su fin de vigencia', prueba: function (d) { return d < 0; } },
+    { k: 'vencida', label: 'Vencidas', desc: 'Proceso abierto tras el vencimiento', prueba: function (d) { return d < 0; } },
     { k: 'urgente', label: '0 a 14 días', desc: 'Urgentes', prueba: function (d) { return d >= 0 && d <= 14; } },
     { k: 'proxima', label: '15 a 21 días', desc: 'Próximas', prueba: function (d) { return d >= 15 && d <= 21; } },
     { k: 'tiempo', label: '22 a 40 días', desc: 'A tiempo', prueba: function (d) { return d >= 22 && d <= 40; } }
@@ -98,7 +97,7 @@
     return Object.assign({ dias: d, rango: rango(d) }, r);
   }).filter(function (r) { return r.rango; }).sort(function (a, b) { return a.dias - b.dias; });
 
-  var estado = { vista: 'ejecutivo', urgencia: 'todas', q: '', ejecutivo: 'todos', ocultarRenovadas: false };
+  var estado = { vista: 'ejecutivo', urgencia: 'todas', q: '', ejecutivo: 'todos' };
 
   function textoDias(d) {
     if (d < 0) return 'Venció hace ' + Math.abs(d) + ' día' + (d === -1 ? '' : 's');
@@ -111,7 +110,7 @@
   function celdaRenovacion(r) {
     if (!r.renovacion) return '<span class="badge warn">Sin orden</span> <button class="btn chico" style="margin-left: 6px">Crear orden</button>';
     if (r.renovacion.tipo === 'ot') return '<span class="badge azul">' + esc(r.renovacion.folio) + '</span> <span class="sub">En trámite</span>';
-    return '<span class="badge ok">Renovada</span> <span class="num" style="font-size: 13px">' + esc(r.renovacion.folio) + '</span>';
+    return '<span class="badge ok">Póliza renovada</span> <span class="num" style="font-size: 13px">' + esc(r.renovacion.folio) + '</span>';
   }
 
   function visibles(ignorarUrgencia) {
@@ -119,7 +118,6 @@
     return filas.filter(function (r) {
       if (estado.vista === 'ejecutivo' && r.ejecutivo !== USUARIO) return false;
       if (estado.vista === 'admin' && estado.ejecutivo !== 'todos' && r.ejecutivo !== estado.ejecutivo) return false;
-      if (estado.ocultarRenovadas && r.renovacion && r.renovacion.tipo === 'poliza') return false;
       if (q && (r.contratante + ' ' + r.num + ' ' + (r.renovacion ? r.renovacion.folio : '')).toLowerCase().indexOf(q) < 0) return false;
       if (!ignorarUrgencia && estado.urgencia !== 'todas' && r.rango.k !== estado.urgencia) return false;
       return true;
@@ -195,7 +193,6 @@
   });
   document.getElementById('r-q').addEventListener('input', function (e) { estado.q = e.target.value; pintar(); });
   document.getElementById('r-ejec').addEventListener('change', function (e) { estado.ejecutivo = e.target.value; pintar(); });
-  document.getElementById('r-ocultar').addEventListener('change', function (e) { estado.ocultarRenovadas = e.target.checked; pintar(); });
   document.getElementById('r-filas').addEventListener('dblclick', function (e) {
     var fila = e.target.closest('tr[data-num]');
     if (fila) location.href = 'poliza.html?num=' + encodeURIComponent(fila.dataset.num);
