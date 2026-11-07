@@ -17,6 +17,8 @@
 - **Nombres de personas físicas:** nombre, apellido paterno, apellido materno en todo el sistema.
 - **Vendedor por póliza:** la ficha del cliente muestra los vendedores de sus pólizas; la ficha de póliza muestra el vendedor de esa póliza.
 
+- **Renovaciones:** pólizas con fin de vigencia en los próximos 40 días o vencidas sin renovar, ordenadas por días. Colores de urgencia de SIAP: morado = vencida, rojo = 0 a 14 días, naranja = 15 a 21, verde = 22 a 40. El color va en una etiqueta ("Vence en 4 días") en lugar de pintar todo el renglón. Tarjetas de resumen por urgencia que también filtran y cuentan cuántas no tienen orden. La columna Renovación distingue "Sin orden" (con botón Crear orden), orden en trámite (folio OT) y "Renovada" (número de la póliza nueva). El ejecutivo ve solo su cartera; el administrador ve todos, con columna y filtro de ejecutivo. Doble clic abre la póliza.
+
 ## Agregados al diseño (para validar)
 
 - Franja de resumen del cliente: pólizas vigentes, prima vigente, recibos pendientes y próxima renovación.
@@ -24,6 +26,8 @@
 - Cartera por ramo con los ramos vacíos en gris (oportunidad de venta).
 
 ## Por confirmar
+
+- Renovaciones: límites exactos de los colores (¿rojo hasta 14 días?), si vencidas es morado o azul (en las capturas de SIAP cambia entre vista de ejecutivo y de administrador) y si las pólizas ya renovadas deben seguir apareciendo.
 
 1. Regla de vigencia de la constancia de situación fiscal (el prototipo usa "más de un año = actualizar").
 2. Columnas reales de las pestañas Tarjetas y Portales (las del prototipo son supuestas).

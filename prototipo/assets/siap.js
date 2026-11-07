@@ -28,7 +28,13 @@ var SIAP = (function () {
   ];
 
   // Módulos que ya tienen página en el prototipo
-  var PAGINAS = { clientes: 'clientes.html' };
+  var PAGINAS = { clientes: 'clientes.html', renovaciones: 'renovaciones.html' };
+
+  // Fecha de "hoy" fija para que el prototipo siempre muestre lo mismo
+  var HOY = new Date(2026, 10, 6);
+
+  function aFecha(s) { var d = s.split('/'); return new Date(+d[2], +d[1] - 1, +d[0]); }
+  function diasHasta(s) { return Math.round((aFecha(s) - HOY) / 86400000); }
 
   function icono(d, tam) {
     tam = tam || 18;
@@ -91,5 +97,5 @@ var SIAP = (function () {
     });
   }
 
-  return { icono: icono, esc: esc, dinero: dinero, iniciales: iniciales, montarMenu: montarMenu };
+  return { icono: icono, esc: esc, dinero: dinero, iniciales: iniciales, montarMenu: montarMenu, HOY: HOY, aFecha: aFecha, diasHasta: diasHasta };
 })();

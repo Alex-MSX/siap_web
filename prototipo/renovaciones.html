@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Renovaciones · SIAP</title>
+<link rel="icon" href="assets/img/logo-prolomer.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/siap.css">
+</head>
+<body>
+<div class="app">
+  <nav id="menu" class="menu" aria-label="Menú principal"></nav>
+
+  <div class="contenido">
+    <header class="barra">
+      <button id="btn-menu" class="btn icono" aria-label="Contraer menú" aria-expanded="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+      <form class="buscador" action="clientes.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6676" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <label for="buscar-global" class="sr">Buscar cliente, RFC, grupo o póliza</label>
+        <input id="buscar-global" type="search" placeholder="Buscar cliente, RFC, grupo o póliza…" autocomplete="off">
+      </form>
+      <div class="barra-der">
+        <button class="btn icono" aria-label="Notificaciones">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.9 1.9 0 003.4 0"></path></svg>
+        </button>
+        <div class="avatar" aria-label="Usuario">AM</div>
+      </div>
+    </header>
+
+    <main class="pagina">
+      <div class="tarjeta-cab" style="align-items: flex-end">
+        <div class="pila" style="gap: 4px">
+          <h1 style="font-size: 28px">Renovaciones</h1>
+          <span class="sub" style="font-size: 14px">Pólizas que vencen en los próximos 40 días y vencidas sin renovar</span>
+        </div>
+        <!-- Solo para el prototipo: en la versión real la vista depende del rol del usuario -->
+        <div class="segmento" role="group" aria-label="Vista del prototipo">
+          <button id="v-ejecutivo" class="on" aria-pressed="true">Mi cartera</button>
+          <button id="v-admin" aria-pressed="false">Todos los ejecutivos</button>
+        </div>
+      </div>
+
+      <!-- Resumen por urgencia: también sirve de filtro -->
+      <div id="urgencias" class="urgencias" role="group" aria-label="Filtrar por urgencia"></div>
+
+      <section class="tarjeta sin-pad" style="flex: 1 1 auto; min-height: 360px" aria-label="Lista de renovaciones">
+        <div class="tarjeta-cab" style="padding: 14px 18px; border-bottom: 1px solid var(--borde)">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; flex: 1 1 auto">
+            <div class="ct-buscar" style="padding: 0; border: 0; flex: 0 1 360px; min-width: 220px">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="left: 12px; top: 11px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+              <label for="r-q" class="sr">Buscar contratante o póliza</label>
+              <input id="r-q" type="search" placeholder="Buscar contratante o póliza" autocomplete="off">
+            </div>
+            <label id="r-ejec-wrap" class="sr-wrap" hidden>
+              <span class="sr">Ejecutivo</span>
+              <select id="r-ejec" class="select"></select>
+            </label>
+          </div>
+          <label class="switch"><input id="r-ocultar" type="checkbox"> Ocultar ya renovadas</label>
+        </div>
+        <table class="ajusta">
+          <thead id="r-cabecera"></thead>
+          <tbody id="r-filas"></tbody>
+        </table>
+        <div id="r-vacio" class="vacio" hidden>No hay renovaciones con estos filtros.</div>
+        <div id="r-pie" class="sub" style="padding: 12px 18px; border-top: 1px solid var(--linea)"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="assets/siap.js"></script>
+<script src="assets/datos-ejemplo.js"></script>
+<script>
+(function () {
+  var esc = SIAP.esc;
+  SIAP.montarMenu('renovaciones');
+
+  var USUARIO = 'Sofía Ramírez'; // ejecutivo "conectado" en el prototipo
+  var POLIZAS_CON_FICHA = {};
+  SIAP_DATOS.clientes.forEach(function (c) { c.polizas.forEach(function (p) { POLIZAS_CON_FICHA[p.num] = true; }); });
+
+  // Rangos de urgencia (los mismos colores que SIAP)
+  var RANGOS = [
+    { k: 'vencida', label: 'Vencidas sin renovar', desc: 'Ya pasó su fin de vigencia', prueba: function (d) { return d < 0; } },
+    { k: 'urgente', label: '0 a 14 días', desc: 'Urgentes', prueba: function (d) { return d >= 0 && d <= 14; } },
+    { k: 'proxima', label: '15 a 21 días', desc: 'Próximas', prueba: function (d) { return d >= 15 && d <= 21; } },
+    { k: 'tiempo', label: '22 a 40 días', desc: 'A tiempo', prueba: function (d) { return d >= 22 && d <= 40; } }
+  ];
+  function rango(d) { return RANGOS.filter(function (r) { return r.prueba(d); })[0]; }
+
+  var filas = SIAP_DATOS.renovaciones.map(function (r) {
+    var d = SIAP.diasHasta(r.fin);
+    return Object.assign({ dias: d, rango: rango(d) }, r);
+  }).filter(function (r) { return r.rango; }).sort(function (a, b) { return a.dias - b.dias; });
+
+  var estado = { vista: 'ejecutivo', urgencia: 'todas', q: '', ejecutivo: 'todos', ocultarRenovadas: false };
+
+  function textoDias(d) {
+    if (d < 0) return 'Venció hace ' + Math.abs(d) + ' día' + (d === -1 ? '' : 's');
+    if (d === 0) return 'Vence hoy';
+    return 'Vence en ' + d + ' día' + (d === 1 ? '' : 's');
+  }
+  function formatoPrima(r) {
+    return Number(r.prima).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function celdaRenovacion(r) {
+    if (!r.renovacion) return '<span class="badge warn">Sin orden</span> <button class="btn chico" style="margin-left: 6px">Crear orden</button>';
+    if (r.renovacion.tipo === 'ot') return '<span class="badge azul">' + esc(r.renovacion.folio) + '</span> <span class="sub">En trámite</span>';
+    return '<span class="badge ok">Renovada</span> <span class="num" style="font-size: 13px">' + esc(r.renovacion.folio) + '</span>';
+  }
+
+  function visibles(ignorarUrgencia) {
+    var q = estado.q.toLowerCase().trim();
+    return filas.filter(function (r) {
+      if (estado.vista === 'ejecutivo' && r.ejecutivo !== USUARIO) return false;
+      if (estado.vista === 'admin' && estado.ejecutivo !== 'todos' && r.ejecutivo !== estado.ejecutivo) return false;
+      if (estado.ocultarRenovadas && r.renovacion && r.renovacion.tipo === 'poliza') return false;
+      if (q && (r.contratante + ' ' + r.num + ' ' + (r.renovacion ? r.renovacion.folio : '')).toLowerCase().indexOf(q) < 0) return false;
+      if (!ignorarUrgencia && estado.urgencia !== 'todas' && r.rango.k !== estado.urgencia) return false;
+      return true;
+    });
+  }
+
+  function pintar() {
+    var base = visibles(true);
+    var lista = visibles(false);
+
+    // Tarjetas de urgencia (cuentan sobre la vista y búsqueda actuales)
+    var tarjetas = [{ k: 'todas', label: 'Todas', desc: 'En la lista' }].concat(RANGOS);
+    document.getElementById('urgencias').innerHTML = tarjetas.map(function (t) {
+      var n = t.k === 'todas' ? base.length : base.filter(function (r) { return r.rango.k === t.k; }).length;
+      var sinOrden = t.k === 'todas' ? 0 : base.filter(function (r) { return r.rango.k === t.k && !r.renovacion; }).length;
+      var on = estado.urgencia === t.k;
+      return '<button class="urg urg-' + t.k + (on ? ' on' : '') + '" data-k="' + t.k + '" aria-pressed="' + on + '">' +
+        '<span class="urg-label"><span class="urg-punto" aria-hidden="true"></span>' + t.label + '</span>' +
+        '<strong>' + n + '</strong>' +
+        '<span class="sub">' + (sinOrden ? sinOrden + ' sin orden' : t.desc) + '</span></button>';
+    }).join('');
+
+    // Cabecera (la columna Ejecutivo solo en la vista de administrador)
+    var admin = estado.vista === 'admin';
+    document.getElementById('r-cabecera').innerHTML = '<tr>' +
+      '<th style="width: 190px">Urgencia</th><th>Contratante</th><th style="width: 170px">Póliza</th>' +
+      '<th style="width: 260px">Renovación</th><th style="width: 120px">Fin de vigencia</th><th style="width: 170px">Ramo</th>' +
+      (admin ? '<th style="width: 150px">Ejecutivo</th>' : '') +
+      '<th class="der" style="width: 130px">Prima</th><th style="width: 70px">Mon.</th></tr>';
+
+    document.getElementById('r-filas').innerHTML = lista.map(function (r) {
+      var conFicha = POLIZAS_CON_FICHA[r.num];
+      return '<tr class="clic"' + (conFicha ? ' data-num="' + esc(r.num) + '" title="Doble clic para abrir la póliza"' : ' title="Póliza de ejemplo sin ficha"') + '>' +
+        '<td><span class="dias dias-' + r.rango.k + '"><span class="urg-punto" aria-hidden="true"></span>' + textoDias(r.dias) + '</span></td>' +
+        '<td class="envuelve" style="font-weight: 500">' + esc(r.contratante) + '</td>' +
+        '<td class="envuelve num" style="color: var(--azul); font-weight: 600">' + esc(r.num) + '</td>' +
+        '<td class="envuelve">' + celdaRenovacion(r) + '</td>' +
+        '<td class="num">' + r.fin + '</td>' +
+        '<td class="envuelve">' + esc(r.ramo) + '</td>' +
+        (admin ? '<td class="envuelve">' + esc(r.ejecutivo) + '</td>' : '') +
+        '<td class="der num">' + formatoPrima(r) + '</td>' +
+        '<td><span class="badge off">' + esc(r.moneda) + '</span></td></tr>';
+    }).join('');
+    document.getElementById('r-vacio').hidden = lista.length > 0;
+
+    var sinOrden = lista.filter(function (r) { return !r.renovacion; }).length;
+    document.getElementById('r-pie').textContent = lista.length + ' póliza' + (lista.length === 1 ? '' : 's') +
+      (sinOrden ? ' · ' + sinOrden + ' sin orden de renovación' : '') +
+      (admin ? '' : ' · Cartera de ' + USUARIO);
+  }
+
+  // Selector de ejecutivos (vista admin)
+  var ejecutivos = filas.map(function (r) { return r.ejecutivo; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).sort();
+  document.getElementById('r-ejec').innerHTML = '<option value="todos">Todos los ejecutivos</option>' +
+    ejecutivos.map(function (e) { return '<option>' + esc(e) + '</option>'; }).join('');
+
+  function cambiarVista(v) {
+    estado.vista = v;
+    document.getElementById('v-ejecutivo').classList.toggle('on', v === 'ejecutivo');
+    document.getElementById('v-admin').classList.toggle('on', v === 'admin');
+    document.getElementById('v-ejecutivo').setAttribute('aria-pressed', v === 'ejecutivo');
+    document.getElementById('v-admin').setAttribute('aria-pressed', v === 'admin');
+    document.getElementById('r-ejec-wrap').hidden = v !== 'admin';
+    pintar();
+  }
+  document.getElementById('v-ejecutivo').addEventListener('click', function () { cambiarVista('ejecutivo'); });
+  document.getElementById('v-admin').addEventListener('click', function () { cambiarVista('admin'); });
+  document.getElementById('urgencias').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-k]');
+    if (!b) return;
+    estado.urgencia = estado.urgencia === b.dataset.k ? 'todas' : b.dataset.k;
+    pintar();
+  });
+  document.getElementById('r-q').addEventListener('input', function (e) { estado.q = e.target.value; pintar(); });
+  document.getElementById('r-ejec').addEventListener('change', function (e) { estado.ejecutivo = e.target.value; pintar(); });
+  document.getElementById('r-ocultar').addEventListener('change', function (e) { estado.ocultarRenovadas = e.target.checked; pintar(); });
+  document.getElementById('r-filas').addEventListener('dblclick', function (e) {
+    var fila = e.target.closest('tr[data-num]');
+    if (fila) location.href = 'poliza.html?num=' + encodeURIComponent(fila.dataset.num);
+  });
+
+  pintar();
+})();
+</script>
+</body>
+</html>
