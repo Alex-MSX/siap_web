@@ -12,7 +12,7 @@
 - **Contactos en Clientes:** se muestran los primeros 4 y un enlace "N contactos más en la ficha".
 - **Cobranza automática:** lista de correos con estrella para marcar el principal.
 
-- **Ficha de póliza:** se abre con doble clic en la póliza (pantalla de Clientes). Misma estructura de SIAP: datos arriba, importes, documentos/endosos/órdenes a la izquierda y pestañas Recibos, Orden, Asegurados (Unidades en autos), Beneficiarios, Condiciones, Adicionales y Bitácora. En recibos, cobranza y conciliación se muestran como dos estados independientes.
+- **Ficha de póliza:** se abre con doble clic en la póliza (pantalla de Clientes). Encabezado en tres columnas como en SIAP: (1) datos de la póliza: vigencia, contratante, dirección, forma y método de pago, concepto; (2) aseguradora, ramo, agente, vendedor y ejecutivo; (3) prima en tarjetas con la prima total resaltada. Debajo, documentos/endosos/órdenes a la izquierda y pestañas Recibos, Orden, Asegurados (Unidades en autos), Beneficiarios, Condiciones, Adicionales y Bitácora. En recibos, cobranza y conciliación se muestran como dos estados independientes.
 
 ## Agregados al diseño (para validar)
 

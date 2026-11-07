@@ -153,7 +153,17 @@ table.ajusta td.envuelve { white-space: normal; word-break: break-word; }
 .ct-puesto { font-size: 12px; color: var(--gris); }
 .ct-detalle { flex: 1 1 360px; min-width: 0; padding: 20px 22px; }
 .ct-lateral { flex: 0 1 320px; min-width: 260px; padding: 20px 22px 20px 0; }
-/* Ficha de póliza */
+/* Ficha de póliza: tres columnas en el encabezado */
+.pol-cols { display: flex; flex-wrap: wrap; margin-top: 18px; padding-top: 4px; border-top: 1px solid var(--linea); }
+.pol-col { flex: 1 1 280px; min-width: 0; padding: 14px 24px 0; border-left: 1px solid var(--linea); }
+.pol-col:first-child { flex-grow: 1.4; padding-left: 0; border-left: 0; }
+.pol-prima { flex: 0 1 320px; padding-right: 0; }
+.pol-renglon { padding: 10px 0; border-bottom: 1px solid var(--linea); }
+.pol-renglon:last-child { border-bottom: 0; }
+.pol-renglon.doble { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.pol-prima .importes { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 6px; }
+.pol-prima .importe.total { grid-column: span 2; }
+.pol-prima .importe.total b { font-size: 22px; }
 .importes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
 .importe { padding: 12px 14px; border-radius: 10px; background: #F7F9FC; display: flex; flex-direction: column; gap: 4px; }
 .importe span { font-size: 12px; color: var(--gris); }

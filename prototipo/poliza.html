@@ -57,7 +57,14 @@
             </button>
           </div>
         </div>
-        <div id="p-campos" class="campos"></div>
+        <!-- Tres columnas: datos de la póliza | aseguradora y quién la maneja | prima -->
+        <div class="pol-cols">
+          <div id="p-col1" class="pol-col"></div>
+          <div id="p-col2" class="pol-col"></div>
+          <div class="pol-col pol-prima">
+            <div id="p-importes" class="importes"></div>
+          </div>
+        </div>
       </section>
 
       <div class="fila">
@@ -77,18 +84,11 @@
           </div>
         </section>
 
-        <!-- Importes + pestañas -->
-        <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
-          <section class="tarjeta pad" aria-label="Importes">
-            <h2 style="font-size: 16px; margin-bottom: 14px">Importes</h2>
-            <div id="p-importes" class="importes"></div>
-          </section>
-
-          <section class="tarjeta sin-pad" style="flex: 1 1 auto" aria-label="Detalle de la póliza">
-            <div id="p-pestanas" class="pestanas" role="tablist" aria-label="Secciones de la póliza"></div>
-            <div id="p-panel"></div>
-          </section>
-        </div>
+        <!-- Pestañas -->
+        <section class="tarjeta sin-pad" style="flex: 999 1 640px; min-width: 0" aria-label="Detalle de la póliza">
+          <div id="p-pestanas" class="pestanas" role="tablist" aria-label="Secciones de la póliza"></div>
+          <div id="p-panel"></div>
+        </section>
       </div>
     </main>
   </div>
@@ -182,27 +182,32 @@
   var est = p.est === 'vig' ? ['ok', 'Vigente'] : p.est === 'ren' ? ['warn', 'Por renovar · ' + p.dias + ' días'] : ['off', 'No vigente'];
   document.getElementById('p-chips').innerHTML =
     '<span class="badge ' + est[0] + '">' + est[1] + '</span>' +
-    '<span class="badge azul">' + esc(p.ramo) + '</span>' +
-    '<span class="badge off">' + esc(p.aseg) + '</span>' +
     '<span class="badge off">Sin siniestros</span>';
 
   var dir = cliente.direcciones[0];
   var dirTexto = dir ? dir.calle + ' ' + dir.ext + (dir.int ? ' int. ' + dir.int : '') + ', ' + dir.colonia + ', ' + dir.municipio + ', C.P. ' + dir.cp : '';
-  var campos = [
-    ['Vigencia', p.desde + ' – ' + p.hasta],
-    ['Contratante', '<a href="ficha.html?id=' + cliente.id + '" style="text-decoration: none">' + esc(cliente.nombre) + '</a>', true],
-    ['Concepto', p.concepto],
-    ['Forma de pago', forma],
-    ['Método de pago', 'Agente'],
-    ['Agente', '50218 · ' + cliente.vendedor],
-    ['Vendedor', cliente.vendedor],
-    ['Ejecutivo', cliente.ejecutivo],
-    ['Dirección', dirTexto]
-  ];
-  document.getElementById('p-campos').innerHTML = campos.map(function (f) {
-    var ancho = f[0] === 'Dirección' ? ' style="grid-column: span 2"' : '';
-    return '<div class="campo"' + ancho + '><span>' + f[0] + '</span><b>' + (f[2] ? f[1] : esc(f[1])) + '</b></div>';
-  }).join('');
+  // Cada renglón es una lista de campos: [etiqueta, valor, esHTML]; dos campos = van lado a lado
+  function columna(renglones) {
+    return renglones.map(function (r) {
+      return '<div class="pol-renglon' + (r.length > 1 ? ' doble' : '') + '">' + r.map(function (f) {
+        return '<div class="campo"><span>' + f[0] + '</span><b>' + (f[2] ? f[1] : esc(f[1])) + '</b></div>';
+      }).join('') + '</div>';
+    }).join('');
+  }
+  document.getElementById('p-col1').innerHTML = columna([
+    [['Desde', p.desde], ['Hasta', p.hasta]],
+    [['Contratante', '<a href="ficha.html?id=' + cliente.id + '" style="text-decoration: none">' + esc(cliente.nombre) + '</a>', true]],
+    [['Dirección', dirTexto]],
+    [['Forma de pago', forma], ['Método de pago', 'Agente']],
+    [['Concepto', p.concepto]]
+  ]);
+  document.getElementById('p-col2').innerHTML = columna([
+    [['Aseguradora', p.aseg]],
+    [['Ramo', p.ramo]],
+    [['Agente', '50218 · ' + cliente.vendedor]],
+    [['Vendedor', cliente.vendedor]],
+    [['Ejecutivo', cliente.ejecutivo]]
+  ]);
 
   // ---------- Importes ----------
   document.getElementById('p-importes').innerHTML = [
