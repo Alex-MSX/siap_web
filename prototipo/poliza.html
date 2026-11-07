@@ -62,7 +62,7 @@
           <div id="p-col1" class="pol-col"></div>
           <div id="p-col2" class="pol-col"></div>
           <div class="pol-col pol-prima">
-            <div id="p-importes" class="importes"></div>
+            <div id="p-importes" class="suma"></div>
           </div>
         </div>
       </section>
@@ -210,11 +210,12 @@
   ]);
 
   // ---------- Importes ----------
+  // Formato suma: un concepto debajo de otro, importes alineados a la derecha y el total al final
   document.getElementById('p-importes').innerHTML = [
     ['Prima neta', neta], ['Recargos', recargos], ['Gastos de expedición', gastos], ['IVA', iva]
   ].map(function (x) {
-    return '<div class="importe"><span>' + x[0] + '</span><b class="num">' + dinero(x[1]) + '</b></div>';
-  }).join('') + '<div class="importe total"><span>Prima total</span><b class="num">' + dinero(p.prima) + '</b></div>';
+    return '<div class="suma-renglon"><span>' + x[0] + '</span><b class="num">' + dinero(x[1]) + '</b></div>';
+  }).join('') + '<div class="suma-total"><span>Prima total</span><b class="num">' + dinero(p.prima) + '</b></div>';
 
   // ---------- Documentos, endosos, órdenes ----------
   function renglonDoc(ico, titulo, sub, extra) {
