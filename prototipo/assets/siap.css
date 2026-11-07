@@ -153,7 +153,7 @@ table.ajusta td.envuelve { white-space: normal; word-break: break-word; }
 .ct-puesto { font-size: 12px; color: var(--gris); }
 .ct-detalle { flex: 1 1 360px; min-width: 0; padding: 20px 22px; }
 .ct-lateral { flex: 0 1 320px; min-width: 260px; padding: 20px 22px 20px 0; }
-/* Renovaciones: semáforo de SIAP (morado, rojo, amarillo, verde) */
+/* Renovaciones: semáforo (morado, rojo, naranja, verde). En SIAP era amarillo; en la web se usa naranja por legibilidad */
 .segmento { display: inline-flex; padding: 3px; border-radius: 10px; background: #E9EDF2; }
 .segmento button { min-height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: transparent; color: var(--texto-2); font-size: 14px; cursor: pointer; }
 .segmento button.on { background: var(--blanco); color: var(--azul-osc); font-weight: 600; box-shadow: 0 1px 2px rgba(16, 24, 40, .08); }
@@ -167,12 +167,12 @@ table.ajusta td.envuelve { white-space: normal; word-break: break-word; }
 .urg-punto { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #9AA3AF; flex: 0 0 auto; }
 .urg-vencida .urg-punto, .dias-vencida .urg-punto { background: #7C3AED; }
 .urg-urgente .urg-punto, .dias-urgente .urg-punto { background: #D92D20; }
-.urg-proxima .urg-punto, .dias-proxima .urg-punto { background: #EAB308; }
+.urg-proxima .urg-punto, .dias-proxima .urg-punto { background: #F08C00; }
 .urg-tiempo .urg-punto, .dias-tiempo .urg-punto { background: #12A150; }
 .dias { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .dias-vencida { background: #F1EAFE; color: #5B21B6; }
 .dias-urgente { background: #FDECEC; color: #B42318; }
-.dias-proxima { background: #FEF7C3; color: #713F12; }
+.dias-proxima { background: #FFF1DE; color: #8F4300; }
 .dias-tiempo { background: #E5F4EA; color: #156A38; }
 
 /* Ficha de póliza: tres columnas en el encabezado */
