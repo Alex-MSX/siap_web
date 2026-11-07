@@ -32,7 +32,14 @@ Estructura actual (diseñada por Alex): `id_cliente`, `persona` (FISICA/MORAL), 
 4. Pasar todo el texto de la tabla a `utf8mb4` (hoy hay mezcla de `latin1_spanish_ci` y `utf8mb4_bin`), para evitar errores de collation en los JOIN.
 5. Mover `documentos` (JSON) a una tabla `cliente_documentos` (identificación oficial, acta constitutiva, etc.). La constancia fiscal se guarda en el perfil fiscal.
 6. `rfc`: reducir a `varchar(13)` y agregar índice.
-7. `fecha_actualizacion`: si representa la fecha de la constancia fiscal, se migra a `perfiles_fiscales.fecha_emision_csf` y se elimina de `clientes`.
+7. `fecha_actualizacion` (confirmado: es la fecha de la constancia fiscal): se migra a `perfiles_fiscales.fecha_emision_csf` y se elimina de `clientes`.
+8. Convertir `id_grupo` e `id_ejecutivo` (hoy solo índices) en llaves foráneas reales.
+
+### Llaves foráneas de `clientes`
+
+- **`id_ejecutivo` → `ejecutivos`:** quién atiende al cliente. Llave RESTRICT: no se puede borrar un ejecutivo con clientes asignados; primero se reasignan y luego se marca inactivo.
+- **`id_grupo` → `grupos`:** agrupa clientes para el portal de clientes (como SIAP_ATP). El acceso se da con `usuarios_portal.id_grupo` → `grupos`: el usuario apunta al grupo, para que un grupo pueda tener varios usuarios (por ejemplo, director y administración de la misma empresa), todos viendo las pólizas del grupo.
+- Los usuarios del portal (clientes) van separados de los usuarios internos de Prolomer, o al menos distinguidos por rol, para que un cliente nunca vea pantallas internas.
 
 ### Tabla `direcciones`
 
@@ -79,6 +86,4 @@ Se usa `requiere_factura` explícito en lugar de dejar un campo vacío, para dis
 
 ## Por confirmar
 
-- Significado de `fecha_actualizacion` en `clientes` (¿es la fecha de la constancia fiscal?).
-- Si `id_grupo` e `id_ejecutivo` tienen llave foránea real o solo índice.
 - `fecha_nacimiento` en personas morales: ¿se usa como fecha de constitución?
