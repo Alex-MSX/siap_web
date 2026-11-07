@@ -149,11 +149,14 @@
   function sumarDias(f, d) { return new Date(f.getFullYear(), f.getMonth(), f.getDate() + d); }
 
   // ---------- Importes (se desglosan a partir de la prima total) ----------
+  var DESCUENTO = { 'GMC-30417': 0.05, 'AUT-90021': 0.03, 'AUT-558120': 0.04 };
   var forma = FORMA[p.num] || 'Contado';
   var porRecargo = forma === 'Contado' ? 0 : 0.06;
+  var porDescuento = DESCUENTO[p.num] || 0;
   var base = p.prima / 1.16;
   var gastos = Math.min(1450, base * 0.05);
-  var neta = (base - gastos) / (1 + porRecargo);
+  var neta = (base - gastos) / (1 + porRecargo - porDescuento);
+  var descuentos = -neta * porDescuento;
   var recargos = neta * porRecargo;
   var iva = p.prima - base;
 
@@ -212,7 +215,7 @@
   // ---------- Importes ----------
   // Formato suma: un concepto debajo de otro, importes alineados a la derecha y el total al final
   document.getElementById('p-importes').innerHTML = [
-    ['Prima neta', neta], ['Recargos', recargos], ['Gastos de expedición', gastos], ['IVA', iva]
+    ['Prima neta', neta], ['Descuentos', descuentos], ['Recargos', recargos], ['Gastos de expedición', gastos], ['IVA', iva]
   ].map(function (x) {
     return '<div class="suma-renglon"><span>' + x[0] + '</span><b class="num">' + dinero(x[1]) + '</b></div>';
   }).join('') + '<div class="suma-total"><span>Prima total</span><b class="num">' + dinero(p.prima) + '</b></div>';
