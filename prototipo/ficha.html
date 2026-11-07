@@ -152,7 +152,9 @@
   document.getElementById('f-chips').innerHTML =
     '<span class="badge azul">Persona ' + esc(c.persona.toLowerCase()) + '</span>' +
     '<span class="badge off">ID ' + c.id + '</span><span class="badge off">' + esc(c.grupo) + '</span>';
-  document.getElementById('f-campos').innerHTML = [['RFC', c.rfc], ['Vendedor', c.vendedor], ['Ejecutivo', c.ejecutivo], ['Cliente desde', c.desde]]
+  // El vendedor es de cada póliza: aquí se listan los vendedores distintos de sus pólizas
+  var vendedores = c.polizas.map(function (p) { return p.vendedor; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+  document.getElementById('f-campos').innerHTML = [['RFC', c.rfc], [vendedores.length > 1 ? 'Vendedores (por póliza)' : 'Vendedor (por póliza)', vendedores.join(', ')], ['Ejecutivo', c.ejecutivo], ['Cliente desde', c.desde]]
     .map(function (f) { return '<div class="campo"><span>' + f[0] + '</span><b>' + esc(f[1]) + '</b></div>'; }).join('');
 
   // Cartera por ramo (solo pólizas vigentes o por renovar)

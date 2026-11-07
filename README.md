@@ -42,6 +42,7 @@ prototipo/
     img/                 Logo
 docs/
   decisiones.md          Decisiones de diseño y supuestos por confirmar
+  base-de-datos.md       Diseño y revisión de las tablas de MySQL
 ```
 
 ## Regla de seguridad

@@ -14,6 +14,9 @@
 
 - **Ficha de póliza:** se abre con doble clic en la póliza (pantalla de Clientes). Encabezado en tres columnas como en SIAP: (1) datos de la póliza: vigencia, contratante, dirección, forma y método de pago, concepto; (2) aseguradora, ramo, agente, vendedor y ejecutivo; (3) prima en formato suma (prima neta, descuentos, recargos, gastos de expedición, IVA): un concepto debajo de otro, a la misma altura que las otras dos columnas, con importes a la derecha y la prima total resaltada al final. Debajo, documentos/endosos/órdenes a la izquierda y pestañas Recibos, Orden, Asegurados (Unidades en autos), Beneficiarios, Condiciones, Adicionales y Bitácora. En recibos, cobranza y conciliación se muestran como dos estados independientes.
 
+- **Nombres de personas físicas:** nombre, apellido paterno, apellido materno en todo el sistema.
+- **Vendedor por póliza:** la ficha del cliente muestra los vendedores de sus pólizas; la ficha de póliza muestra el vendedor de esa póliza.
+
 ## Agregados al diseño (para validar)
 
 - Franja de resumen del cliente: pólizas vigentes, prima vigente, recibos pendientes y próxima renovación.
