@@ -42,7 +42,8 @@ var SIAP = (function () {
   }
 
   function dinero(n) {
-    return '$' + Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    var v = Number(n);
+    return (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   function iniciales(nombre) {

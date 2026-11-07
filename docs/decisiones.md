@@ -12,6 +12,8 @@
 - **Contactos en Clientes:** se muestran los primeros 4 y un enlace "N contactos más en la ficha".
 - **Cobranza automática:** lista de correos con estrella para marcar el principal.
 
+- **Ficha de póliza:** se abre con doble clic en la póliza (pantalla de Clientes). Misma estructura de SIAP: datos arriba, importes, documentos/endosos/órdenes a la izquierda y pestañas Recibos, Orden, Asegurados (Unidades en autos), Beneficiarios, Condiciones, Adicionales y Bitácora. En recibos, cobranza y conciliación se muestran como dos estados independientes.
+
 ## Agregados al diseño (para validar)
 
 - Franja de resumen del cliente: pólizas vigentes, prima vigente, recibos pendientes y próxima renovación.
@@ -23,4 +25,4 @@
 1. Regla de vigencia de la constancia de situación fiscal (el prototipo usa "más de un año = actualizar").
 2. Columnas reales de las pestañas Tarjetas y Portales (las del prototipo son supuestas).
 3. Si los correos y teléfonos pertenecen a cada contacto o al cliente en general.
-4. Qué se muestra al dar clic en una póliza (siguiente pantalla: ficha de póliza con recibos, endosos y documentos).
+4. Ficha de póliza: confirmar que "No siniestro" genera la carta de no siniestralidad en Word, qué significan los dos íconos de cada recibo (en el prototipo: conciliación de comisión y comprobante de cobro), y las columnas reales de Asegurados, Beneficiarios, Condiciones y Adicionales.

@@ -153,6 +153,19 @@ table.ajusta td.envuelve { white-space: normal; word-break: break-word; }
 .ct-puesto { font-size: 12px; color: var(--gris); }
 .ct-detalle { flex: 1 1 360px; min-width: 0; padding: 20px 22px; }
 .ct-lateral { flex: 0 1 320px; min-width: 260px; padding: 20px 22px 20px 0; }
+/* Ficha de póliza */
+.importes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.importe { padding: 12px 14px; border-radius: 10px; background: #F7F9FC; display: flex; flex-direction: column; gap: 4px; }
+.importe span { font-size: 12px; color: var(--gris); }
+.importe b { font-size: 17px; font-weight: 600; }
+.importe.total { background: var(--azul-claro); }
+.importe.total span { color: var(--azul-osc); }
+.importe.total b { color: var(--azul-osc); }
+.kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+.estado-ok { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ok); }
+.evento { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--linea); }
+.evento:last-child { border-bottom: 0; }
+.evento-punto { flex: 0 0 auto; width: 10px; height: 10px; margin-top: 5px; border-radius: 50%; background: var(--azul); }
 .contactos-grid { flex: 2 1 520px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; align-content: start; }
 .contacto-card { border: 1px solid var(--borde); border-radius: 12px; padding: 16px 18px; }
 .contacto-card .cab { display: flex; align-items: center; gap: 12px; }

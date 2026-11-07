@@ -10,6 +10,7 @@ Plataforma web para administrar la cartera de seguros de Prolomer. Con el tiempo
 |---|---|---|
 | Clientes | `prototipo/clientes.html` | Buscador, contratantes, contactos, resumen del cliente y pólizas por ramo |
 | Ficha del cliente | `prototipo/ficha.html?id=2550` | Datos generales, cartera por ramo, documentos, contactos, tarjetas, portales y direcciones |
+| Ficha de póliza | `prototipo/poliza.html?num=GMI-10879` | Datos, importes, documentos, endosos, órdenes, recibos, asegurados, beneficiarios, condiciones, adicionales y bitácora |
 
 Para verlas, descarga el repositorio y abre `prototipo/clientes.html` en el navegador (doble clic). No necesitan servidor.
 
@@ -33,6 +34,7 @@ Desde la primera versión con datos reales: login con usuarios y permisos, y HTT
 prototipo/
   clientes.html          Pantalla de clientes
   ficha.html             Ficha del cliente
+  poliza.html            Ficha de póliza
   assets/
     siap.css             Estilos compartidos
     siap.js              Menú lateral y utilidades

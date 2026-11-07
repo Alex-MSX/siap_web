@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Póliza · SIAP</title>
+<link rel="icon" href="assets/img/logo-prolomer.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/siap.css">
+</head>
+<body>
+<div class="app">
+  <nav id="menu" class="menu" aria-label="Menú principal"></nav>
+
+  <div class="contenido">
+    <header class="barra">
+      <button id="btn-menu" class="btn icono" aria-label="Contraer menú" aria-expanded="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+      <form class="buscador" action="clientes.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6676" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <label for="buscar" class="sr">Buscar cliente, RFC, grupo o póliza</label>
+        <input id="buscar" type="search" placeholder="Buscar cliente, RFC, grupo o póliza…" autocomplete="off">
+      </form>
+      <div class="barra-der">
+        <button class="btn icono" aria-label="Notificaciones">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.9 1.9 0 003.4 0"></path></svg>
+        </button>
+        <div class="avatar" aria-label="Usuario">AM</div>
+      </div>
+    </header>
+
+    <main class="pagina">
+      <div class="migas">
+        <a href="clientes.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>Clientes</a>
+        <span>/</span><a id="m-cliente" href="#" style="font-weight: 400"></a>
+        <span>/</span><span id="m-poliza"></span>
+      </div>
+
+      <!-- Encabezado de la póliza -->
+      <section class="tarjeta pad" aria-label="Póliza">
+        <div class="ficha-cab">
+          <div id="p-ico" class="ramo-ico" style="width: 56px; height: 56px; border-radius: 14px"></div>
+          <div class="pila" style="gap: 6px; flex: 1 1 320px">
+            <h1 id="p-num" style="font-size: 24px"></h1>
+            <div id="p-chips" class="chips"></div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px">
+            <button class="btn" title="Genera la carta de no siniestralidad en Word">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12l1.5 5 1.5-4 1.5 4 1.5-5"></path></svg>
+              Carta de no siniestro
+            </button>
+            <button class="btn primario">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+              Nuevo endoso
+            </button>
+          </div>
+        </div>
+        <div id="p-campos" class="campos"></div>
+      </section>
+
+      <div class="fila">
+        <!-- Documentos, endosos y órdenes -->
+        <section class="tarjeta pad" style="flex: 1 1 300px; max-width: 420px; min-width: 0; display: flex; flex-direction: column; gap: 18px" aria-label="Documentos de la póliza">
+          <div>
+            <h2 style="font-size: 16px; margin-bottom: 4px">Documentos</h2>
+            <div id="p-docs"></div>
+          </div>
+          <div>
+            <div class="tarjeta-cab"><h2 style="font-size: 16px">Endosos</h2><span id="p-n-endosos" class="cuenta"></span></div>
+            <div id="p-endosos" style="margin-top: 4px"></div>
+          </div>
+          <div>
+            <div class="tarjeta-cab"><h2 style="font-size: 16px">Órdenes</h2><span id="p-n-ordenes" class="cuenta"></span></div>
+            <div id="p-ordenes" style="margin-top: 4px"></div>
+          </div>
+        </section>
+
+        <!-- Importes + pestañas -->
+        <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
+          <section class="tarjeta pad" aria-label="Importes">
+            <h2 style="font-size: 16px; margin-bottom: 14px">Importes</h2>
+            <div id="p-importes" class="importes"></div>
+          </section>
+
+          <section class="tarjeta sin-pad" style="flex: 1 1 auto" aria-label="Detalle de la póliza">
+            <div id="p-pestanas" class="pestanas" role="tablist" aria-label="Secciones de la póliza"></div>
+            <div id="p-panel"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="assets/siap.js"></script>
+<script src="assets/datos-ejemplo.js"></script>
+<script>
+(function () {
+  var esc = SIAP.esc, dinero = SIAP.dinero, icono = SIAP.icono;
+  SIAP.montarMenu('clientes');
+
+  // ---------- Buscar la póliza y su cliente ----------
+  var num = new URLSearchParams(location.search).get('num');
+  var cliente = null, p = null;
+  SIAP_DATOS.clientes.forEach(function (c) {
+    c.polizas.forEach(function (x) { if (!p && x.num === num) { p = x; cliente = c; } });
+  });
+  if (!p) { cliente = SIAP_DATOS.clientes[1]; p = cliente.polizas[0]; }
+  document.title = p.num + ' · SIAP';
+
+  // Fecha de "hoy" fija para que el prototipo siempre muestre lo mismo
+  var HOY = new Date(2026, 10, 6);
+
+  // ---------- Datos complementarios de ejemplo (en la versión real vendrán de la base) ----------
+  var FORMA = { 'AUT-558120': 'Trimestral', 'GMC-30417': 'Mensual', 'AUT-90021': 'Semestral', 'TRA-11873': 'Trimestral', 'APC-44102': 'Semestral' };
+  var ENDOSOS = {
+    'AUT-558120': [{ num: 'E-0001', concepto: 'Alta de unidad · Toyota Hilux 2026', fecha: '03/04/2026', importe: 14820.00 }],
+    'GMC-30417': [
+      { num: 'E-0001', concepto: 'Alta de 2 asegurados', fecha: '15/05/2026', importe: 31250.00 },
+      { num: 'E-0002', concepto: 'Baja de 1 asegurado', fecha: '02/09/2026', importe: -9870.40 }
+    ],
+    'GMI-10879': [{ num: 'E-0001', concepto: 'Cambio de domicilio', fecha: '20/08/2026', importe: 0 }]
+  };
+  var RAMO_ICONO = {
+    autos: 'M5 16V11l2-5h10l2 5v5M3 16h18v2H3zM7 19v1M17 19v1M5 11h14',
+    gmm: 'M4 8h16v12H4zM9 8V5h6v3M12 11v6M9 14h6',
+    vida: 'M12 20s-8-4.6-8-10a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 5.4-8 10-8 10zM5 12h3l2-3 2 5 2-2h5',
+    hogar: 'M3 11l9-7 9 7M5 10v10h14V10M10 20v-6h4v6',
+    accidentes: 'M7.5 16.5l9-9a3 3 0 00-4.2-4.2l-9 9a3 3 0 004.2 4.2zM14 14l3.5 3.5a3 3 0 004.2-4.2L18 10',
+    rc: 'M12 4v16M8 20h8M5 7h14M5 7l-3 6a3 3 0 006 0zM19 7l-3 6a3 3 0 006 0z',
+    transporte: 'M2 7h12v9H2zM14 10h4l3 3v3h-7M6 19a2 2 0 100-4 2 2 0 000 4zM17 19a2 2 0 100-4 2 2 0 000 4z',
+    diversos: 'M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z'
+  };
+  var I = {
+    pdf: 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h1.5a1.5 1.5 0 010 3H9v-3zM9 16v2',
+    ver: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z',
+    check: 'M20 6L9 17l-5-5',
+    comprobante: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3',
+    orden: 'M9 4h6v3H9zM6 6H5v15h14V6h-1M9 12h6M9 16h4',
+    endoso: 'M6 3h9l4 4v14H6zM14 3v5h5M9 14h6M12 11v6'
+  };
+
+  // ---------- Utilidades de fechas ----------
+  function aFecha(s) { var d = s.split('/'); return new Date(+d[2], +d[1] - 1, +d[0]); }
+  function aTexto(f) { return ('0' + f.getDate()).slice(-2) + '/' + ('0' + (f.getMonth() + 1)).slice(-2) + '/' + f.getFullYear(); }
+  function sumarMeses(f, m) { return new Date(f.getFullYear(), f.getMonth() + m, f.getDate()); }
+  function sumarDias(f, d) { return new Date(f.getFullYear(), f.getMonth(), f.getDate() + d); }
+
+  // ---------- Importes (se desglosan a partir de la prima total) ----------
+  var forma = FORMA[p.num] || 'Contado';
+  var porRecargo = forma === 'Contado' ? 0 : 0.06;
+  var base = p.prima / 1.16;
+  var gastos = Math.min(1450, base * 0.05);
+  var neta = (base - gastos) / (1 + porRecargo);
+  var recargos = neta * porRecargo;
+  var iva = p.prima - base;
+
+  // ---------- Recibos (según la forma de pago) ----------
+  var nRecibos = { Contado: 1, Semestral: 2, Trimestral: 4, Mensual: 12 }[forma];
+  var recibos = [];
+  for (var i = 0; i < nRecibos; i++) {
+    var ini = sumarMeses(aFecha(p.desde), i * 12 / nRecibos);
+    var fin = sumarMeses(aFecha(p.desde), (i + 1) * 12 / nRecibos);
+    var cobro = sumarDias(ini, 20);
+    var cobrado = p.est !== 'off' ? cobro < HOY : true;
+    recibos.push({
+      serie: (i + 1) + '/' + nRecibos, desde: aTexto(ini), hasta: aTexto(fin), total: p.prima / nRecibos,
+      cobrado: cobrado, fechaCobro: cobrado ? aTexto(cobro) : '',
+      conciliado: cobrado && sumarDias(cobro, 30) < HOY,
+      vencido: !cobrado && ini < HOY
+    });
+  }
+
+  // ---------- Encabezado ----------
+  document.getElementById('m-cliente').textContent = cliente.nombre;
+  document.getElementById('m-cliente').href = 'ficha.html?id=' + cliente.id;
+  document.getElementById('m-poliza').textContent = 'Póliza ' + p.num;
+  document.getElementById('p-ico').innerHTML = icono(RAMO_ICONO[p.cat], 26);
+  document.getElementById('p-num').textContent = 'Póliza ' + p.num;
+  var est = p.est === 'vig' ? ['ok', 'Vigente'] : p.est === 'ren' ? ['warn', 'Por renovar · ' + p.dias + ' días'] : ['off', 'No vigente'];
+  document.getElementById('p-chips').innerHTML =
+    '<span class="badge ' + est[0] + '">' + est[1] + '</span>' +
+    '<span class="badge azul">' + esc(p.ramo) + '</span>' +
+    '<span class="badge off">' + esc(p.aseg) + '</span>' +
+    '<span class="badge off">Sin siniestros</span>';
+
+  var dir = cliente.direcciones[0];
+  var dirTexto = dir ? dir.calle + ' ' + dir.ext + (dir.int ? ' int. ' + dir.int : '') + ', ' + dir.colonia + ', ' + dir.municipio + ', C.P. ' + dir.cp : '';
+  var campos = [
+    ['Vigencia', p.desde + ' – ' + p.hasta],
+    ['Contratante', '<a href="ficha.html?id=' + cliente.id + '" style="text-decoration: none">' + esc(cliente.nombre) + '</a>', true],
+    ['Concepto', p.concepto],
+    ['Forma de pago', forma],
+    ['Método de pago', 'Agente'],
+    ['Agente', '50218 · ' + cliente.vendedor],
+    ['Vendedor', cliente.vendedor],
+    ['Ejecutivo', cliente.ejecutivo],
+    ['Dirección', dirTexto]
+  ];
+  document.getElementById('p-campos').innerHTML = campos.map(function (f) {
+    var ancho = f[0] === 'Dirección' ? ' style="grid-column: span 2"' : '';
+    return '<div class="campo"' + ancho + '><span>' + f[0] + '</span><b>' + (f[2] ? f[1] : esc(f[1])) + '</b></div>';
+  }).join('');
+
+  // ---------- Importes ----------
+  document.getElementById('p-importes').innerHTML = [
+    ['Prima neta', neta], ['Recargos', recargos], ['Gastos de expedición', gastos], ['IVA', iva]
+  ].map(function (x) {
+    return '<div class="importe"><span>' + x[0] + '</span><b class="num">' + dinero(x[1]) + '</b></div>';
+  }).join('') + '<div class="importe total"><span>Prima total</span><b class="num">' + dinero(p.prima) + '</b></div>';
+
+  // ---------- Documentos, endosos, órdenes ----------
+  function renglonDoc(ico, titulo, sub, extra) {
+    return '<div class="doc"><span class="ramo-ico" style="width: 36px; height: 36px">' + icono(ico) + '</span>' +
+      '<div class="pila" style="flex: 1 1 auto"><span style="font-size: 14px; font-weight: 500">' + titulo + '</span><span class="sub">' + sub + '</span></div>' +
+      (extra || '') + '<button class="ico-btn" aria-label="Ver ' + SIAP.esc(titulo) + '">' + icono(I.ver) + '</button></div>';
+  }
+  document.getElementById('p-docs').innerHTML = renglonDoc(I.pdf, 'Póliza', 'PDF · carátula y condiciones');
+
+  var endosos = ENDOSOS[p.num] || [];
+  document.getElementById('p-n-endosos').textContent = endosos.length;
+  document.getElementById('p-endosos').innerHTML = endosos.length ? endosos.map(function (e) {
+    return renglonDoc(I.endoso, esc(e.num) + ' · ' + esc(e.concepto), e.fecha + (e.importe ? ' · ' + dinero(e.importe) : ' · sin costo'));
+  }).join('') : '<p class="sub" style="margin: 8px 0 0">Esta póliza no tiene endosos.</p>';
+
+  var tipoOT = p.est === 'off' ? 'Emisión' : 'Renovación';
+  var ordenes = [{ folio: 'OT-' + p.num.replace(/\D/g, '').slice(-4) + '-' + aFecha(p.desde).getFullYear(), tipo: tipoOT, fecha: p.desde, estatus: 'Terminada' }];
+  if (p.est === 'ren') ordenes.unshift({ folio: 'OT-' + p.num.replace(/\D/g, '').slice(-4) + '-' + (aFecha(p.hasta).getFullYear()), tipo: 'Renovación', fecha: 'En trámite', estatus: 'En trámite' });
+  document.getElementById('p-n-ordenes').textContent = ordenes.length;
+  document.getElementById('p-ordenes').innerHTML = ordenes.map(function (o) {
+    var b = o.estatus === 'Terminada' ? 'ok' : 'warn';
+    return renglonDoc(I.orden, esc(o.folio) + ' <span class="badge ' + b + '" style="margin-left: 6px">' + esc(o.estatus) + '</span>', esc(o.tipo) + ' · ' + esc(o.fecha));
+  }).join('');
+
+  // ---------- Contenido de cada pestaña ----------
+  function tabla(cols, filas) {
+    return '<div class="scroll-x"><table><thead><tr>' + cols.map(function (c) {
+      return '<th' + (c.der ? ' class="der"' : '') + '>' + c.t + '</th>';
+    }).join('') + '</tr></thead><tbody>' + filas.join('') + '</tbody></table></div>';
+  }
+  function vacio(txt) { return '<div class="vacio">' + txt + '</div>'; }
+  function listaClaveValor(pares) {
+    return '<div class="kv">' + pares.map(function (x) {
+      return '<div class="campo"><span>' + x[0] + '</span><b>' + esc(x[1]) + '</b></div>';
+    }).join('') + '</div>';
+  }
+
+  function panelRecibos() {
+    var pendientes = recibos.filter(function (r) { return !r.cobrado; }).length;
+    var resumen = '<div class="tarjeta-cab" style="padding: 14px 22px; border-bottom: 1px solid var(--linea)">' +
+      '<span class="sub" style="font-size: 14px">' + recibos.length + ' recibo' + (recibos.length === 1 ? '' : 's') + ' · ' + forma.toLowerCase() + '</span>' +
+      '<span class="sub" style="font-size: 14px">' + (pendientes ? pendientes + ' pendiente' + (pendientes === 1 ? '' : 's') + ' de cobro' : 'Todos cobrados') + '</span></div>';
+    return resumen + tabla(
+      [{ t: 'Serie' }, { t: 'Desde' }, { t: 'Hasta' }, { t: 'Total', der: true }, { t: 'Cobranza' }, { t: 'Fecha de cobro' }, { t: 'Conciliación' }, { t: '' }],
+      recibos.map(function (r) {
+        var cob = r.cobrado ? '<span class="badge ok">Cobrado</span>' : r.vencido ? '<span class="badge warn">Pendiente</span>' : '<span class="badge off">Por cobrar</span>';
+        var con = r.conciliado
+          ? '<span class="estado-ok">' + icono(I.check, 16) + 'Conciliado</span>'
+          : '<span class="sub">' + (r.cobrado ? 'Por conciliar' : '—') + '</span>';
+        var comp = r.cobrado ? '<button class="ico-btn" aria-label="Ver comprobante de cobro" title="Comprobante de cobro">' + icono(I.comprobante, 17) + '</button>' : '';
+        return '<tr><td class="num" style="font-weight: 500">' + r.serie + '</td><td class="num">' + r.desde + '</td><td class="num">' + r.hasta + '</td>' +
+          '<td class="der num">' + dinero(r.total) + '</td><td>' + cob + '</td><td class="num">' + (r.fechaCobro || '<span class="sub">—</span>') + '</td>' +
+          '<td>' + con + '</td><td class="der" style="padding: 4px 12px">' + comp + '</td></tr>';
+      })
+    );
+  }
+
+  function panelOrden() {
+    var o = ordenes[ordenes.length - 1];
+    return '<div style="padding: 20px 22px">' + listaClaveValor([
+      ['Folio', o.folio], ['Tipo', o.tipo], ['Estatus', o.estatus], ['Ingresó', o.fecha],
+      ['Capturó', cliente.ejecutivo], ['Aseguradora', p.aseg]
+    ]) + '</div>';
+  }
+
+  function panelAsegurados() {
+    if (p.cat === 'autos') {
+      var unidades = p.num === 'AUT-77310'
+        ? [['Mazda CX-5 i Grand Touring 2024', 'JM3KFBDM5R0123456', 'PXT-482-A', 'Amplia']]
+        : [['Toyota Hilux 2026', '8AJBA3CD1T0012345', 'NUV-218-C', 'Amplia'], ['Nissan NP300 2025', '3N6AD35A9SK812345', 'NUV-219-C', 'Amplia'], ['Volkswagen Saveiro 2025', '9BWKB45U1SP012345', 'NUV-220-C', 'Limitada']];
+      var notaU = p.num === 'AUT-77310' ? '' : '<p class="sub" style="padding: 12px 22px; margin: 0; border-top: 1px solid var(--linea)">Mostrando 3 unidades de ejemplo de la flotilla.</p>';
+      return tabla([{ t: 'Unidad' }, { t: 'Serie (VIN)' }, { t: 'Placas' }, { t: 'Cobertura' }], unidades.map(function (u) {
+        return '<tr><td style="font-weight: 500">' + u[0] + '</td><td class="num">' + u[1] + '</td><td>' + u[2] + '</td><td><span class="badge off">' + u[3] + '</span></td></tr>';
+      })) + notaU;
+    }
+    if (p.cat === 'gmm' || p.cat === 'vida' || p.cat === 'accidentes') {
+      var personas = p.num === 'GMI-10879'
+        ? [['Ricardo Valle Torres', 'Titular', '41'], ['Ana Torres Lima', 'Cónyuge', '39'], ['Sofía Valle Torres', 'Hija', '11'], ['Mateo Valle Torres', 'Hijo', '7']]
+        : p.ramo.indexOf('colectivo') >= 0
+          ? [['Jorge Valle Ortega', 'Titular', '58'], ['Laura Méndez Ruiz', 'Titular', '44'], ['Orlando García Cárdenas', 'Titular', '51']]
+          : [[cliente.contactos[0].nombre, 'Titular', '41']];
+      var nota = p.ramo.indexOf('colectivo') >= 0 ? '<p class="sub" style="padding: 12px 22px; margin: 0; border-top: 1px solid var(--linea)">Mostrando 3 de ' + esc(p.concepto.replace(/\D+/g, ' ').trim().split(' ').pop()) + ' asegurados. <a href="#">Ver lista completa</a></p>' : '';
+      return tabla([{ t: 'Asegurado' }, { t: 'Parentesco' }, { t: 'Edad', der: true }], personas.map(function (x) {
+        return '<tr><td style="font-weight: 500">' + x[0] + '</td><td>' + x[1] + '</td><td class="der num">' + x[2] + '</td></tr>';
+      })) + nota;
+    }
+    return '<div style="padding: 20px 22px">' + listaClaveValor([['Bien asegurado', p.concepto], ['Ubicación', dirTexto]]) + '</div>';
+  }
+
+  function panelBeneficiarios() {
+    if (p.cat !== 'vida' && p.cat !== 'accidentes') return vacio('Este ramo no maneja beneficiarios.');
+    return tabla([{ t: 'Beneficiario' }, { t: 'Parentesco' }, { t: 'Porcentaje', der: true }], [
+      '<tr><td style="font-weight: 500">Ana Torres Lima</td><td>Cónyuge</td><td class="der num">50%</td></tr>',
+      '<tr><td style="font-weight: 500">Sofía Valle Torres</td><td>Hija</td><td class="der num">25%</td></tr>',
+      '<tr><td style="font-weight: 500">Mateo Valle Torres</td><td>Hijo</td><td class="der num">25%</td></tr>'
+    ]);
+  }
+
+  function panelCondiciones() {
+    var pares = {
+      gmm: [['Suma asegurada', '$50,000,000.00'], ['Deducible', '$25,000.00'], ['Coaseguro', '10%'], ['Tope de coaseguro', '$40,000.00'], ['Nivel hospitalario', 'Alto'], ['Zona', 'Ciudad de México']],
+      autos: [['Daños materiales', 'Valor comercial · deducible 5%'], ['Robo total', 'Valor comercial · deducible 10%'], ['Responsabilidad civil', '$3,000,000.00'], ['Gastos médicos ocupantes', '$500,000.00']],
+      vida: [['Suma asegurada', '$2,000,000.00'], ['Plazo', '20 años'], ['Moneda', 'Pesos']],
+      accidentes: [['Muerte accidental', '$500,000.00 por persona'], ['Gastos médicos por accidente', '$100,000.00'], ['Deducible', '$1,000.00']]
+    }[p.cat] || [['Suma asegurada', 'Según carátula'], ['Deducible', 'Según carátula']];
+    return '<div style="padding: 20px 22px">' + listaClaveValor(pares) + '</div>';
+  }
+
+  function panelAdicionales() {
+    var lista = {
+      gmm: ['Emergencia en el extranjero', 'Cobertura dental', 'Eliminación de deducible por accidente'],
+      autos: ['Asistencia vial', 'Auto sustituto', 'Extensión de responsabilidad civil']
+    }[p.cat];
+    if (!lista) return vacio('Esta póliza no tiene coberturas adicionales.');
+    return tabla([{ t: 'Cobertura adicional' }, { t: 'Estatus' }], lista.map(function (x) {
+      return '<tr><td style="font-weight: 500">' + x + '</td><td><span class="badge ok">Contratada</span></td></tr>';
+    }));
+  }
+
+  function panelBitacora() {
+    var eventos = [[p.desde, cliente.ejecutivo, 'Póliza capturada desde la orden ' + ordenes[ordenes.length - 1].folio + '.']];
+    endosos.forEach(function (e) { eventos.push([e.fecha, cliente.ejecutivo, 'Endoso ' + e.num + ': ' + e.concepto + '.']); });
+    recibos.filter(function (r) { return r.cobrado; }).slice(0, 3).forEach(function (r) {
+      eventos.push([r.fechaCobro, 'Cobranza', 'Recibo ' + r.serie + ' cobrado por ' + dinero(r.total) + '.']);
+    });
+    eventos.sort(function (a, b) { return aFecha(b[0]) - aFecha(a[0]); });
+    return '<div style="padding: 8px 22px 16px">' + eventos.map(function (e) {
+      return '<div class="evento"><span class="evento-punto" aria-hidden="true"></span><div class="pila">' +
+        '<span style="font-size: 14px">' + esc(e[2]) + '</span><span class="sub">' + e[0] + ' · ' + esc(e[1]) + '</span></div></div>';
+    }).join('') + '</div>';
+  }
+
+  var PEST = [
+    ['recibos', 'Recibos', panelRecibos], ['orden', 'Orden', panelOrden], ['asegurados', p.cat === 'autos' ? 'Unidades' : 'Asegurados', panelAsegurados],
+    ['beneficiarios', 'Beneficiarios', panelBeneficiarios], ['condiciones', 'Condiciones', panelCondiciones],
+    ['adicionales', 'Adicionales', panelAdicionales], ['bitacora', 'Bitácora', panelBitacora]
+  ];
+  var actual = 'recibos';
+  function pintarPestanas() {
+    document.getElementById('p-pestanas').innerHTML = PEST.map(function (t) {
+      var on = t[0] === actual;
+      return '<button role="tab" class="tab' + (on ? ' on' : '') + '" aria-selected="' + on + '" data-k="' + t[0] + '">' + t[1] + '</button>';
+    }).join('');
+    document.getElementById('p-panel').innerHTML = PEST.filter(function (t) { return t[0] === actual; })[0][2]();
+  }
+  document.getElementById('p-pestanas').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-k]');
+    if (!b) return;
+    actual = b.dataset.k;
+    pintarPestanas();
+  });
+  pintarPestanas();
+})();
+</script>
+</body>
+</html>

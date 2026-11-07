@@ -201,7 +201,7 @@
     var polizas = base.filter(function (p) { return enPestana(p, estado.pestana); });
     document.getElementById('tabla-polizas').innerHTML = polizas.map(function (p) {
       var est = p.est === 'vig' ? ['ok', 'Vigente'] : p.est === 'ren' ? ['warn', 'Por renovar · ' + p.dias + ' días'] : ['off', 'No vigente'];
-      return '<tr><td style="font-weight: 600; color: var(--azul)">' + esc(p.num) + '</td><td>' + esc(p.aseg) + '</td>' +
+      return '<tr class="clic" data-num="' + esc(p.num) + '" title="Doble clic para abrir la póliza"><td style="font-weight: 600; color: var(--azul)">' + esc(p.num) + '</td><td>' + esc(p.aseg) + '</td>' +
         '<td>' + esc(p.concepto) + '</td><td>' + esc(p.ramo) + '</td>' +
         '<td class="num">' + p.desde + ' – ' + p.hasta + '</td><td class="der num">' + dinero(p.prima) + '</td>' +
         '<td><span class="badge ' + est[0] + '">' + est[1] + '</span></td></tr>';
@@ -223,6 +223,11 @@
   tablaClientes.addEventListener('dblclick', function (e) {
     var fila = e.target.closest('tr[data-id]');
     if (fila) location.href = 'ficha.html?id=' + fila.dataset.id;
+  });
+  // Doble clic en una póliza abre su ficha
+  document.getElementById('tabla-polizas').addEventListener('dblclick', function (e) {
+    var fila = e.target.closest('tr[data-num]');
+    if (fila) location.href = 'poliza.html?num=' + encodeURIComponent(fila.dataset.num);
   });
   document.getElementById('pestanas').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-k]');
