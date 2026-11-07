@@ -17,6 +17,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; background: var(--fondo); font-family: Inter, system-ui, sans-serif; color: var(--texto); }
 a { color: var(--azul); }
 a:hover { color: var(--azul-osc); }
@@ -206,6 +207,23 @@ table.ajusta td.envuelve { white-space: normal; word-break: break-word; }
 .campo-form .select { width: 100%; }
 .select:disabled { background: #F4F6F9; color: var(--texto-2); }
 .bitacora-nueva { display: flex; gap: 10px; margin-bottom: 8px; }
+
+/* Ventana de diálogo (No renovar) */
+.dialogo { width: min(620px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 16px; box-shadow: 0 24px 48px rgba(16, 24, 40, .18); color: var(--texto); }
+.dialogo::backdrop { background: rgba(16, 24, 40, .45); }
+.dialogo-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 22px; border-bottom: 1px solid var(--linea); }
+.dialogo-cuerpo { display: flex; flex-direction: column; gap: 16px; padding: 20px 22px; }
+.dialogo-pie { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px; border-top: 1px solid var(--linea); background: #FAFBFC; border-radius: 0 0 16px 16px; }
+.aviso-cancelacion { padding: 14px 16px; border-radius: 10px; background: #FDF3F2; color: #7A271A; }
+.aviso-cancelacion ul { margin: 8px 0 0; padding-left: 20px; font-size: 14px; line-height: 1.6; }
+.btn.primario.rojo { background: #B42318; }
+.btn.primario.rojo:hover { background: #912018; }
+.badge.rojo { background: #FDECEC; color: #B42318; }
+.select.area { min-height: 76px; padding: 10px 12px; resize: vertical; }
+.select.archivo { padding: 7px 10px; }
+.error { font-size: 13px; color: #B42318; font-weight: 500; }
+.cerrado { padding: 16px 18px; border-radius: 12px; background: #FDF3F2; color: #7A271A; }
+.barra-avance span.cerrada { background: #B42318; }
 
 /* Ficha de póliza: tres columnas en el encabezado */
 .pol-cols { display: flex; flex-wrap: wrap; margin-top: 18px; padding-top: 4px; border-top: 1px solid var(--linea); }

@@ -50,7 +50,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5"></path></svg>
               Ver póliza
             </a>
-            <button class="btn peligro">
+            <button id="btn-no-renovar" class="btn peligro">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
               No renovar
             </button>
@@ -77,6 +77,51 @@
     </main>
   </div>
 </div>
+
+<!-- Ventana de "No renovar": motivo obligatorio, evidencia sugerida y aviso de lo que se cancela -->
+<dialog id="dlg-no-renovar" class="dialogo" aria-labelledby="dlg-titulo">
+  <form id="form-no-renovar" method="dialog" novalidate>
+    <div class="dialogo-cab">
+      <h2 id="dlg-titulo" style="font-size: 18px"></h2>
+      <button type="button" class="ico-btn" data-cerrar aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </div>
+    <div class="dialogo-cuerpo">
+      <div class="aviso-cancelacion">
+        <strong style="font-size: 14px">Al confirmar se hará lo siguiente:</strong>
+        <ul id="dlg-afectados"></ul>
+      </div>
+      <label class="campo-form">
+        <span>Motivo <b style="color: #B42318">*</b></span>
+        <select id="dlg-motivo" class="select" aria-describedby="dlg-error">
+          <option value="">Selecciona un motivo…</option>
+          <option>Se fue con otro agente o aseguradora</option>
+          <option>Precio</option>
+          <option>Vendió o dio de baja el bien asegurado</option>
+          <option>Ya no necesita el seguro (cierre de empresa, cambio de situación)</option>
+          <option>Inconformidad con el servicio o un siniestro</option>
+          <option>Otro</option>
+        </select>
+        <span id="dlg-error" class="error" hidden>Elige un motivo para continuar.</span>
+      </label>
+      <label class="campo-form">
+        <span>Comentario</span>
+        <textarea id="dlg-comentario" class="select area" rows="3" placeholder="Detalles que ayuden a entender la decisión del cliente"></textarea>
+      </label>
+      <label class="campo-form">
+        <span>Evidencia (recomendado)</span>
+        <input id="dlg-evidencia" type="file" class="select archivo" accept=".pdf,.png,.jpg,.jpeg,.eml,.msg">
+        <span class="sub" style="font-weight: 400">Correo o captura de WhatsApp donde el cliente pide no renovar.</span>
+      </label>
+      <p class="sub" style="margin: 0">Si después el cliente cambia de opinión, se tramita una rehabilitación de póliza desde Solicitudes.</p>
+    </div>
+    <div class="dialogo-pie">
+      <button type="button" class="btn" data-cerrar>Cancelar</button>
+      <button type="submit" class="btn primario rojo">Confirmar no renovación</button>
+    </div>
+  </form>
+</dialog>
 
 <script src="assets/siap.js"></script>
 <script src="assets/datos-ejemplo.js"></script>
@@ -152,9 +197,18 @@
   document.getElementById('r-titulo').textContent = 'Póliza ' + ren.num + ' · ' + ren.contratante;
   var claseDias = dias < 0 ? 'vencida' : dias <= 14 ? 'urgente' : dias <= 21 ? 'proxima' : 'tiempo';
   var textoDias = dias < 0 ? 'Venció hace ' + Math.abs(dias) + ' días' : dias === 0 ? 'Vence hoy' : 'Vence en ' + dias + ' días';
-  document.getElementById('r-chips').innerHTML =
-    '<span class="dias dias-' + claseDias + '"><span class="urg-punto" aria-hidden="true"></span>' + textoDias + '</span>' +
-    (renovada ? '<span class="badge ok">Póliza renovada · ' + esc(ren.renovacion.folio) + '</span>' : ren.renovacion ? '<span class="badge azul">' + esc(ren.renovacion.folio) + ' en trámite</span>' : '<span class="badge warn">Sin orden</span>');
+  function pintarChips() {
+    var chipDias = '<span class="dias dias-' + claseDias + '"><span class="urg-punto" aria-hidden="true"></span>' + textoDias + '</span>';
+    if (noRenovada) {
+      document.getElementById('r-chips').innerHTML = chipDias + '<span class="badge rojo">No renovada</span>' +
+        noRenovada.canceladas.map(function (c) { return '<span class="badge off">' + esc(c) + ' cancelada</span>'; }).join('');
+      return;
+    }
+    document.getElementById('r-chips').innerHTML = chipDias +
+      (renovada ? '<span class="badge ok">Póliza renovada · ' + esc(ren.renovacion.folio) + '</span>' : ren.renovacion ? '<span class="badge azul">' + esc(ren.renovacion.folio) + ' en trámite</span>' : '<span class="badge warn">Sin orden</span>');
+  }
+  var noRenovada = null; // { motivo, comentario, evidencia, por, fecha, canceladas: [] }
+  pintarChips();
   var verPoliza = document.getElementById('r-ver-poliza');
   if (poliza) verPoliza.href = 'poliza.html?num=' + encodeURIComponent(poliza.num); else verPoliza.hidden = true;
 
@@ -275,6 +329,53 @@
   var PANELES = { art492: panelArt492, contactos: panelContactos, direcciones: panelDirecciones, renovacion: panelRenovacion, pago: panelPago,
     cotizaciones: panelCotizaciones, orden: panelOrden, bitacora: panelBitacora };
 
+  // ---------- No renovar ----------
+  function afectados() {
+    var lista = [{ txt: 'La póliza <b>' + esc(ren.num) + '</b> pasa a <b>NO RENOVADA</b>.' }];
+    if (ren.renovacion && ren.renovacion.tipo === 'ot') lista.push({ txt: 'Se cancelará la orden de renovación <b>' + esc(ren.renovacion.folio) + '</b>.', cancela: 'Orden ' + ren.renovacion.folio });
+    if (renovada) lista.push({ txt: 'Se cancelará la póliza renovada <b>' + esc(ren.renovacion.folio) + '</b>.', cancela: 'Póliza ' + ren.renovacion.folio });
+    // Salvaguarda: si la póliza renovada ya tuviera recibos cobrados se avisaría en rojo (en los datos de ejemplo nunca pasa)
+    lista.push({ txt: 'El proceso de renovación se cierra y la póliza sale del panel de renovaciones.' });
+    return lista;
+  }
+  var dlg = document.getElementById('dlg-no-renovar');
+  document.getElementById('btn-no-renovar').addEventListener('click', function () {
+    document.getElementById('dlg-titulo').textContent = 'No renovar la póliza ' + ren.num;
+    document.getElementById('dlg-afectados').innerHTML = afectados().map(function (a) { return '<li>' + a.txt + '</li>'; }).join('');
+    document.getElementById('dlg-error').hidden = true;
+    dlg.showModal();
+    document.getElementById('dlg-motivo').focus();
+  });
+  dlg.addEventListener('click', function (e) { if (e.target.closest('[data-cerrar]')) dlg.close(); });
+  document.getElementById('dlg-motivo').addEventListener('change', function () { document.getElementById('dlg-error').hidden = true; });
+  document.getElementById('form-no-renovar').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var motivo = document.getElementById('dlg-motivo').value;
+    if (!motivo) { document.getElementById('dlg-error').hidden = false; document.getElementById('dlg-motivo').focus(); return; }
+    var archivo = document.getElementById('dlg-evidencia').files[0];
+    noRenovada = {
+      motivo: motivo, comentario: document.getElementById('dlg-comentario').value.trim(),
+      evidencia: archivo ? archivo.name : '', por: USUARIO, fecha: HOY_TXT,
+      canceladas: afectados().filter(function (a) { return a.cancela; }).map(function (a) { return a.cancela; })
+    };
+    bitacora.push([HOY_TXT, USUARIO, 'No renovar. Motivo: ' + motivo + (noRenovada.comentario ? ' (' + noRenovada.comentario + ')' : '') +
+      (noRenovada.canceladas.length ? '. Cancelado: ' + noRenovada.canceladas.join(', ') : '') + (noRenovada.evidencia ? '. Evidencia: ' + noRenovada.evidencia : '. Sin evidencia') + '.']);
+    dlg.close();
+    document.getElementById('btn-no-renovar').hidden = true;
+    pintarChips();
+    pintar();
+  });
+
+  function panelCerrado() {
+    return '<div class="cerrado"><strong>Proceso cerrado: la póliza no se renueva</strong>' +
+      '<div class="campos" style="margin: 10px 0 0; padding: 0; border: 0">' +
+      '<div class="campo"><span>Motivo</span><b>' + esc(noRenovada.motivo) + '</b></div>' +
+      '<div class="campo"><span>Decidió</span><b>' + esc(noRenovada.por) + ' · ' + noRenovada.fecha + '</b></div>' +
+      '<div class="campo"><span>Cancelado</span><b>' + (noRenovada.canceladas.length ? esc(noRenovada.canceladas.join(', ')) : 'Nada') + '</b></div>' +
+      '<div class="campo"><span>Evidencia</span><b>' + (noRenovada.evidencia ? esc(noRenovada.evidencia) : '<span style="color: #B42318">Sin evidencia</span>') + '</b></div>' +
+      '</div>' + (noRenovada.comentario ? '<p style="margin: 12px 0 0; font-size: 14px">' + esc(noRenovada.comentario) + '</p>' : '') + '</div>';
+  }
+
   // ---------- Pintar ----------
   function pintar() {
     var hechos = DEF.filter(function (d) { return pasos[d.k].ok; }).length;
@@ -285,6 +386,12 @@
       : 'Falta: ' + DEF.filter(function (d) { return !pasos[d.k].ok; }).map(function (d) { return d.label.toLowerCase(); }).join(', ') + '.';
     document.getElementById('av-barra').style.width = (hechos / DEF.length * 100) + '%';
     document.getElementById('av-barra').className = completo ? 'completa' : '';
+    if (noRenovada) {
+      document.getElementById('av-texto').textContent = 'Proceso cerrado: no renovada';
+      document.getElementById('av-sub').textContent = 'Motivo: ' + noRenovada.motivo + '. Esta póliza ya no aparecerá en el panel de renovaciones.';
+      document.getElementById('av-barra').style.width = '100%';
+      document.getElementById('av-barra').className = 'cerrada';
+    }
 
     document.getElementById('pasos').innerHTML = DEF.map(function (d) {
       var ok = pasos[d.k].ok, on = d.k === actual;
@@ -301,6 +408,8 @@
     var titulo = def ? '<div class="panel-titulo"><h2 style="font-size: 17px">' + def.n + '. ' + def.label + '</h2><span class="sub">' + def.desc + '</span></div>'
       : '<div class="panel-titulo"><h2 style="font-size: 17px">' + EXTRAS.filter(function (x) { return x.k === actual; })[0].label + '</h2></div>';
     var siguiente = def && def.n < DEF.length ? '<div class="panel-pie"><button class="btn" data-ir="' + DEF[def.n].k + '">Siguiente: ' + DEF[def.n].label + ' ' + icono('M9 6l6 6-6 6', 16) + '</button></div>' : '';
+    // Con el proceso cerrado por "No renovar", los pasos ya no se editan (la bitácora y las pestañas siguen disponibles)
+    if (noRenovada && def) { document.getElementById('panel').innerHTML = panelCerrado(); return; }
     document.getElementById('panel').innerHTML = titulo + PANELES[actual]() + siguiente;
   }
 

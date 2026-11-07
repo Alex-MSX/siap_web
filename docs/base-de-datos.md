@@ -84,6 +84,45 @@ Ejemplos:
 
 Se usa `requiere_factura` explícito en lugar de dejar un campo vacío, para distinguir "no quiere factura" de "no se capturó" y poder reportar errores.
 
+## Proceso de renovación
+
+**Principio:** el estatus de la póliza (vigente, cancelada, renovada, no renovada) y el proceso de renovación son cosas distintas. Una póliza puede estar RENOVADA y su proceso seguir abierto. El panel de renovaciones muestra los procesos abiertos, no las pólizas sin renovar.
+
+### Cómo está hoy en SIAP
+
+- 5 columnas booleanas en `polizas` (una por paso) que nacen apagadas al capturar la póliza, más un campo maestro que el código pone en verdadero cuando los 5 pasos se cumplen.
+- Como cada renovación es una póliza nueva (un renglón nuevo), cada vigencia tiene sus propios campos: la historia año con año se conserva.
+- El cierre es automático (nadie lo marca a mano). Se conserva.
+
+### Cambios recomendados
+
+| Paso | Hoy | Propuesta |
+|---|---|---|
+| 1. Artículo 492 | Booleano | Calculado desde los documentos del cliente (si se vence un documento, el paso deja de cumplirse) |
+| 2. Contactos | Booleano | `contactos_confirmado_por` + `contactos_confirmado_en` (vacío = pendiente) |
+| 3. Direcciones | Booleano | `direcciones_confirmado_por` + `direcciones_confirmado_en` |
+| 4. Renovación | Booleano | Calculado: existe una póliza nueva no cancelada con `id_poliza_anterior` = esta |
+| 5. Forma de pago | Booleano | `forma_pago_renovacion` + `metodo_pago_renovacion` + quién y cuándo (se guarda la decisión, no solo que se tomó, y se usa al generar la orden) |
+| Cierre | Booleano que pone el código | Columna generada a partir de los 5 pasos, para que no se pueda desincronizar |
+
+- **Regla del panel:** proceso incompleto **y** estatus distinto de NO RENOVADA y CANCELADA.
+- Una tabla aparte `procesos_renovacion` (1 a 1 con la póliza) solo valdría la pena si se quiere guardar el historial de cada confirmación y su deshacer. Con un renglón por vigencia no es indispensable.
+
+### "No renovar"
+
+Una sola operación, en **transacción** (se aplica todo o nada):
+
+1. La póliza vigente pasa a NO RENOVADA.
+2. Si hay orden de renovación en trámite, se cancela.
+3. Si ya hay póliza renovada, se cancela.
+4. El proceso se cierra con resultado "no renovada" y la póliza sale del panel.
+
+- **Quién:** cualquier ejecutivo sobre su cartera, sin aprobación.
+- **Se guarda:** motivo (obligatorio), comentario, evidencia (recomendada: correo o captura de WhatsApp), quién, cuándo y qué orden o póliza se canceló.
+- **Antes de confirmar** se muestra exactamente qué se va a cancelar.
+- **Póliza renovada ya pagada:** en la práctica no ocurre (si el cliente no renueva, no paga). Como salvaguarda, si tuviera recibos cobrados el aviso lo marca en rojo.
+- **Sin deshacer:** si el cliente cambia de opinión, se tramita una rehabilitación de póliza desde Solicitudes.
+
 ## Por confirmar
 
 - `fecha_nacimiento` en personas morales: ¿se usa como fecha de constitución?
