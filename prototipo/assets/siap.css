@@ -175,6 +175,38 @@ table.ajusta td.envuelve { white-space: normal; word-break: break-word; }
 .dias-proxima { background: #FFF1DE; color: #8F4300; }
 .dias-tiempo { background: #E5F4EA; color: #156A38; }
 
+/* Proceso de renovación: avance y pasos */
+.btn.peligro { color: #B42318; border-color: #F3C5C1; }
+.btn.peligro:hover { background: #FDECEC; color: #B42318; }
+.avance { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; border-bottom: 1px solid var(--linea); }
+.barra-avance { flex: 0 1 420px; min-width: 200px; height: 10px; border-radius: 999px; background: #E9EDF2; overflow: hidden; }
+.barra-avance span { display: block; height: 100%; border-radius: 999px; background: var(--azul); transition: width .25s ease; }
+.barra-avance span.completa { background: #12A150; }
+.pasos-nav { display: flex; flex-wrap: wrap; align-items: stretch; justify-content: space-between; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--borde); }
+.pasos { display: flex; flex-wrap: wrap; gap: 4px; }
+.paso { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 0 14px; border: 0; border-bottom: 2px solid transparent; background: transparent; text-align: left; cursor: pointer; color: var(--texto); }
+.paso:hover { background: #F7F9FC; }
+.paso.on { border-bottom-color: var(--azul); }
+.paso-num { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: #FDECEC; color: #B42318; border: 1.5px solid #F3C5C1; }
+.paso.hecho .paso-num { background: #12A150; color: #fff; border-color: #12A150; }
+.paso-label { font-size: 14px; font-weight: 600; }
+.paso.on .paso-label { color: var(--azul-osc); }
+.paso-estado { font-size: 12px; color: #B42318; }
+.paso.hecho .paso-estado { color: var(--ok); }
+.extras { align-items: stretch; }
+.extras .tab { min-height: 60px; }
+.panel-paso { padding: 20px 22px 24px; }
+.panel-titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.panel-pie { display: flex; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--linea); }
+.confirmar { margin-top: 18px; }
+.confirmado { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; padding: 12px 14px; border-radius: 10px; background: var(--ok-bg); color: var(--ok); font-size: 14px; }
+.dos-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+.campo-form { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.campo-form span { font-size: 12px; color: var(--gris); font-weight: 500; }
+.campo-form .select { width: 100%; }
+.select:disabled { background: #F4F6F9; color: var(--texto-2); }
+.bitacora-nueva { display: flex; gap: 10px; margin-bottom: 8px; }
+
 /* Ficha de póliza: tres columnas en el encabezado */
 .pol-cols { display: flex; flex-wrap: wrap; margin-top: 18px; padding-top: 4px; border-top: 1px solid var(--linea); }
 .pol-col { flex: 1 1 280px; min-width: 0; padding: 14px 24px 0; border-left: 1px solid var(--linea); }

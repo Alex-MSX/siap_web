@@ -19,6 +19,8 @@
 
 - **Renovaciones:** pólizas con fin de vigencia en los próximos 40 días o vencidas sin renovar, ordenadas por días. Semáforo de SIAP con 4 colores, igual para ejecutivo y administrador: morado = vencida, rojo = 0 a 14 días, naranja = 15 a 21 (en SIAP es amarillo; en la web se usa naranja porque es más legible), verde = 22 a 40. El color va en una etiqueta ("Vence en 4 días") en lugar de pintar todo el renglón. Tarjetas de resumen por urgencia que también filtran y cuentan cuántas no tienen orden. **El panel mide el proceso de renovación, no la renovación:** una póliza sale del panel cuando su proceso de renovación termina, no cuando se captura la póliza nueva (en SIAP antiguo, capturar la renovación la hacía desaparecer aunque quedaran pendientes). Por eso no hay opción de ocultar las ya renovadas. La columna Renovación distingue "Sin orden" (con botón Crear orden), orden en trámite (folio OT) y "Póliza renovada" (número de la póliza nueva; el proceso puede seguir abierto). El ejecutivo ve solo su cartera; el administrador ve todos, con columna y filtro de ejecutivo. Doble clic abre la póliza.
 
+- **Proceso de renovación:** se abre con doble clic en el panel de renovaciones. Lista de verificación con 5 pasos obligatorios y barra de avance: (1) Artículo 492, expediente completo y vigente, se completa solo cuando todos los documentos están vigentes; (2) Contactos actualizados; (3) Direcciones de riesgo y fiscal correctas; (4) Renovación, se completa sola al capturar la póliza renovada; (5) Forma y método de pago de la próxima vigencia. Cada confirmación registra quién y cuándo, y se anota en la bitácora. Al completar los 5 pasos el proceso termina y la póliza sale del panel. Pestañas aparte: Cotizaciones (opcional, a petición del cliente), Orden (generar la orden de renovación) y Bitácora (comentarios). Botón "No renovar" en el encabezado.
+
 ## Agregados al diseño (para validar)
 
 - Franja de resumen del cliente: pólizas vigentes, prima vigente, recibos pendientes y próxima renovación.
@@ -27,7 +29,7 @@
 
 ## Por confirmar
 
-- Renovaciones: límite exacto entre rojo y amarillo (¿rojo hasta 14 días?) y qué pasos forman el proceso de renovación (siguiente pantalla: ficha de la renovación).
+- Renovaciones: límite exacto entre rojo y amarillo (¿rojo hasta 14 días?) ; en el proceso de renovación, qué pasa al dar "No renovar" (¿pide motivo?) y cuál es la regla para considerar vigente el expediente del artículo 492.
 
 1. Regla de vigencia de la constancia de situación fiscal (el prototipo usa "más de un año = actualizar").
 2. Columnas reales de las pestañas Tarjetas y Portales (las del prototipo son supuestas).

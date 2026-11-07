@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proceso de renovación · SIAP</title>
+<link rel="icon" href="assets/img/logo-prolomer.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/siap.css">
+</head>
+<body>
+<div class="app">
+  <nav id="menu" class="menu" aria-label="Menú principal"></nav>
+
+  <div class="contenido">
+    <header class="barra">
+      <button id="btn-menu" class="btn icono" aria-label="Contraer menú" aria-expanded="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+      <form class="buscador" action="clientes.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6676" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <label for="buscar" class="sr">Buscar cliente, RFC, grupo o póliza</label>
+        <input id="buscar" type="search" placeholder="Buscar cliente, RFC, grupo o póliza…" autocomplete="off">
+      </form>
+      <div class="barra-der">
+        <button class="btn icono" aria-label="Notificaciones">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.9 1.9 0 003.4 0"></path></svg>
+        </button>
+        <div class="avatar" aria-label="Usuario">SR</div>
+      </div>
+    </header>
+
+    <main class="pagina">
+      <div class="migas">
+        <a href="renovaciones.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>Renovaciones</a>
+        <span>/</span><span id="m-poliza"></span>
+      </div>
+
+      <!-- Encabezado: póliza que se renueva -->
+      <section class="tarjeta pad" aria-label="Póliza que se renueva">
+        <div class="ficha-cab">
+          <div class="pila" style="gap: 8px; flex: 1 1 360px">
+            <span class="sub" style="font-size: 13px; font-weight: 600; letter-spacing: .06em">PROCESO DE RENOVACIÓN</span>
+            <h1 id="r-titulo" style="font-size: 24px"></h1>
+            <div id="r-chips" class="chips"></div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px">
+            <a id="r-ver-poliza" class="btn" href="#">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5"></path></svg>
+              Ver póliza
+            </a>
+            <button class="btn peligro">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+              No renovar
+            </button>
+          </div>
+        </div>
+        <div id="r-campos" class="campos"></div>
+      </section>
+
+      <!-- Avance del proceso -->
+      <section class="tarjeta sin-pad" style="flex: 1 1 auto" aria-label="Pasos del proceso de renovación">
+        <div class="avance">
+          <div class="pila" style="gap: 4px">
+            <strong id="av-texto" style="font-size: 16px"></strong>
+            <span id="av-sub" class="sub"></span>
+          </div>
+          <div class="barra-avance" aria-hidden="true"><span id="av-barra"></span></div>
+        </div>
+        <div class="pasos-nav">
+          <div id="pasos" class="pasos" role="tablist" aria-label="Pasos obligatorios"></div>
+          <div id="extras" class="pasos extras" role="tablist" aria-label="Herramientas"></div>
+        </div>
+        <div id="panel" class="panel-paso"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="assets/siap.js"></script>
+<script src="assets/datos-ejemplo.js"></script>
+<script>
+(function () {
+  var esc = SIAP.esc, dinero = SIAP.dinero, icono = SIAP.icono;
+  SIAP.montarMenu('renovaciones');
+
+  var USUARIO = 'Sofía Ramírez';
+  var HOY_TXT = '06/11/2026';
+
+  // ---------- Renovación, póliza y cliente ----------
+  var num = new URLSearchParams(location.search).get('num');
+  var ren = SIAP_DATOS.renovaciones.filter(function (r) { return r.num === num; })[0] || SIAP_DATOS.renovaciones.filter(function (r) { return r.num === '19-211-4566-0'; })[0];
+  var cliente = null, poliza = null;
+  SIAP_DATOS.clientes.forEach(function (c) { c.polizas.forEach(function (p) { if (p.num === ren.num) { poliza = p; cliente = c; } }); });
+
+  // Cliente de ejemplo genérico cuando la renovación no tiene ficha completa en los datos
+  if (!cliente) {
+    cliente = {
+      id: null, nombre: ren.contratante, rfc: 'XAXX010101000', persona: /S\.?A\.?|S DE RL|AC$|SC$/.test(ren.contratante) ? 'Moral' : 'Física',
+      contactos: [
+        { nombre: 'Lorena Vélez López', puesto: 'Administración', correos: ['lvelez@cliente.mx'], tels: [{ num: '55 1412 3182', ext: '', tipo: 'Celular' }] },
+        { nombre: 'Martha Talboy Arellano', puesto: 'Asistente de dirección', correos: ['mtalboy@cliente.mx'], tels: [{ num: '55 5555 0102', ext: 'ext. 12', tipo: 'Oficina' }] }
+      ],
+      direcciones: [
+        { calle: 'Desierto de los Leones', ext: '5578', int: '', colonia: 'Olivar de los Padres', municipio: 'Álvaro Obregón', cp: '01780' },
+        { calle: 'Fujiyama', ext: '144', int: '', colonia: 'Las Águilas', municipio: 'Álvaro Obregón', cp: '01710' },
+        { calle: 'Torres Adalid', ext: '331', int: '102', colonia: 'Narvarte Poniente', municipio: 'Benito Juárez', cp: '03020' }
+      ],
+      documentos: [
+        { nombre: 'Identificación oficial', detalle: 'Cargada', estado: 'ok', etiqueta: 'Vigente' },
+        { nombre: 'Acta constitutiva', detalle: 'Cargada', estado: 'ok', etiqueta: 'Vigente' },
+        { nombre: 'Constancia de situación fiscal', detalle: 'Emitida el 01/09/2025', estado: 'warn', etiqueta: 'Actualizar' }
+      ]
+    };
+  }
+  var aseguradora = poliza ? poliza.aseg : 'Seguros Sura';
+  var dias = SIAP.diasHasta(ren.fin);
+
+  // ---------- Estado inicial de los pasos (en la versión real viene de la base) ----------
+  function confirmado(quien, fecha) { return { ok: true, por: quien, fecha: fecha }; }
+  var renovada = ren.renovacion && ren.renovacion.tipo === 'poliza';
+  var pasos = {
+    art492: cliente.documentos.every(function (d) { return d.estado === 'ok'; }) ? confirmado(USUARIO, '14/09/2026') : { ok: false },
+    contactos: confirmado(USUARIO, '14/09/2026'),
+    direcciones: confirmado(USUARIO, '15/09/2026'),
+    renovacion: renovada ? { ok: true, por: 'Sistema', fecha: 'al capturar la póliza nueva' } : { ok: false },
+    pago: { ok: false }
+  };
+  var direccionRiesgo = 0, direccionFiscal = 0, metodoNuevo = '', formaNueva = '';
+  var bitacora = [
+    ['14/09/2026', USUARIO, 'Se solicitaron cotizaciones de renovación a 8 aseguradoras a petición del cliente.'],
+    ['15/09/2026', USUARIO, 'Contactos y direcciones confirmados con Lorena Vélez por teléfono.']
+  ];
+  if (renovada) bitacora.push(['26/09/2026', 'Sistema', 'Póliza renovada capturada: ' + ren.renovacion.folio + '.']);
+
+  var DEF = [
+    { k: 'art492', n: 1, label: 'Artículo 492', desc: 'Expediente de identificación completo y vigente' },
+    { k: 'contactos', n: 2, label: 'Contactos', desc: 'Contactos del cliente actualizados' },
+    { k: 'direcciones', n: 3, label: 'Direcciones', desc: 'Dirección de riesgo y fiscal correctas' },
+    { k: 'renovacion', n: 4, label: 'Renovación', desc: 'Póliza renovada capturada' },
+    { k: 'pago', n: 5, label: 'Forma de pago', desc: 'Forma y método de pago de la próxima vigencia' }
+  ];
+  var EXTRAS = [
+    { k: 'cotizaciones', label: 'Cotizaciones' }, { k: 'orden', label: 'Orden' }, { k: 'bitacora', label: 'Bitácora' }
+  ];
+  var actual = (DEF.filter(function (d) { return !pasos[d.k].ok; })[0] || DEF[0]).k;
+
+  // ---------- Encabezado ----------
+  document.title = 'Renovación ' + ren.num + ' · SIAP';
+  document.getElementById('m-poliza').textContent = 'Póliza ' + ren.num;
+  document.getElementById('r-titulo').textContent = 'Póliza ' + ren.num + ' · ' + ren.contratante;
+  var claseDias = dias < 0 ? 'vencida' : dias <= 14 ? 'urgente' : dias <= 21 ? 'proxima' : 'tiempo';
+  var textoDias = dias < 0 ? 'Venció hace ' + Math.abs(dias) + ' días' : dias === 0 ? 'Vence hoy' : 'Vence en ' + dias + ' días';
+  document.getElementById('r-chips').innerHTML =
+    '<span class="dias dias-' + claseDias + '"><span class="urg-punto" aria-hidden="true"></span>' + textoDias + '</span>' +
+    (renovada ? '<span class="badge ok">Póliza renovada · ' + esc(ren.renovacion.folio) + '</span>' : ren.renovacion ? '<span class="badge azul">' + esc(ren.renovacion.folio) + ' en trámite</span>' : '<span class="badge warn">Sin orden</span>');
+  var verPoliza = document.getElementById('r-ver-poliza');
+  if (poliza) verPoliza.href = 'poliza.html?num=' + encodeURIComponent(poliza.num); else verPoliza.hidden = true;
+
+  document.getElementById('r-campos').innerHTML = [
+    ['Contratante', cliente.id ? '<a href="ficha.html?id=' + cliente.id + '" style="text-decoration: none">' + esc(cliente.nombre) + '</a>' : esc(cliente.nombre), true],
+    ['Fin de vigencia', ren.fin], ['Aseguradora', aseguradora], ['Ramo', ren.ramo],
+    ['Ejecutivo', ren.ejecutivo], ['Prima total', Number(ren.prima).toLocaleString('es-MX', { minimumFractionDigits: 2 }) + ' ' + ren.moneda]
+  ].map(function (f) { return '<div class="campo"><span>' + f[0] + '</span><b>' + (f[2] ? f[1] : esc(f[1])) + '</b></div>'; }).join('');
+
+  // ---------- Paneles ----------
+  function textoDireccion(d) { return d.calle + ' ' + d.ext + (d.int ? ' int. ' + d.int : '') + ', ' + d.colonia + ', ' + d.municipio + ', C.P. ' + d.cp; }
+  function pieConfirmacion(k, textoBoton) {
+    var p = pasos[k];
+    if (p.ok) {
+      return '<div class="confirmado">' + icono('M20 6L9 17l-5-5', 18) + '<span>Confirmado por <b>' + esc(p.por) + '</b> ' + (/^\d/.test(p.fecha) ? 'el ' : '') + esc(p.fecha) + '</span>' +
+        (k !== 'renovacion' ? '<button class="btn chico" data-deshacer="' + k + '" style="margin-left: auto">Deshacer</button>' : '') + '</div>';
+    }
+    return textoBoton ? '<div class="confirmar"><button class="btn primario" data-confirmar="' + k + '">' + icono('M20 6L9 17l-5-5', 16) + ' ' + textoBoton + '</button></div>' : '';
+  }
+
+  function panelArt492() {
+    var docs = cliente.documentos.map(function (d) {
+      return '<div class="doc"><span class="ramo-ico" style="width: 36px; height: 36px">' + icono('M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h4') + '</span>' +
+        '<div class="pila" style="flex: 1 1 auto"><span style="font-size: 14px; font-weight: 500">' + esc(d.nombre) + '</span><span class="sub">' + esc(d.detalle) + '</span></div>' +
+        '<span class="badge ' + d.estado + '">' + esc(d.etiqueta) + '</span>' +
+        (d.estado === 'ok' ? '<button class="ico-btn" aria-label="Ver ' + esc(d.nombre) + '">' + icono('M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z') + '</button>'
+          : '<button class="btn chico">Subir nueva</button>') + '</div>';
+    }).join('');
+    var faltan = cliente.documentos.filter(function (d) { return d.estado !== 'ok'; });
+    return '<p class="sub" style="margin: 0 0 8px">Documentos del expediente de identificación del cliente. Se toman de su ficha, así que al actualizar aquí también se actualiza allá.</p>' +
+      docs + (faltan.length ? '<div class="aviso">Falta actualizar: ' + faltan.map(function (d) { return d.nombre.toLowerCase(); }).join(', ') + '. Este paso se completa solo cuando todos los documentos estén vigentes.</div>' : pieConfirmacion('art492', 'Confirmar expediente completo'));
+  }
+
+  function panelContactos() {
+    var filas = cliente.contactos.map(function (c) {
+      return '<tr><td style="font-weight: 500">' + esc(c.nombre) + '</td><td>' + esc(c.puesto || '—') + '</td><td><a href="mailto:' + esc(c.correos[0]) + '">' + esc(c.correos[0]) + '</a></td><td class="num">' + esc(c.tels[0] ? c.tels[0].num : '') + '</td></tr>';
+    }).join('');
+    return '<p class="sub" style="margin: 0 0 12px">Revisa con el cliente que sus contactos sigan vigentes. Los cambios se hacen en su ficha.' +
+      (cliente.id ? ' <a href="ficha.html?id=' + cliente.id + '">Editar contactos en la ficha del cliente</a>' : '') + '</p>' +
+      '<div class="tarjeta sin-pad"><table class="ajusta"><thead><tr><th>Contacto</th><th style="width: 220px">Puesto</th><th>Correo</th><th style="width: 160px">Teléfono</th></tr></thead><tbody>' + filas + '</tbody></table></div>' +
+      pieConfirmacion('contactos', 'Confirmar que los contactos están actualizados');
+  }
+
+  function panelDirecciones() {
+    var opciones = function (sel) {
+      return cliente.direcciones.map(function (d, i) { return '<option value="' + i + '"' + (i === sel ? ' selected' : '') + '>' + esc(textoDireccion(d)) + '</option>'; }).join('');
+    };
+    var bloqueado = pasos.direcciones.ok ? ' disabled' : '';
+    return '<p class="sub" style="margin: 0 0 14px">Aquí se detectan los errores de facturación: confirma que la dirección de riesgo y la fiscal sean las correctas para la próxima vigencia.</p>' +
+      '<div class="dos-col">' +
+      '<label class="campo-form"><span>Dirección de riesgo</span><select class="select" data-dir="riesgo"' + bloqueado + '>' + opciones(direccionRiesgo) + '</select></label>' +
+      '<label class="campo-form"><span>Dirección fiscal (perfil fiscal del cliente)</span><select class="select" data-dir="fiscal"' + bloqueado + '>' + opciones(direccionFiscal) + '</select></label>' +
+      '</div>' +
+      (direccionRiesgo !== direccionFiscal ? '<p class="sub" style="margin: 10px 0 0">La dirección de riesgo y la fiscal son distintas. Es válido (por ejemplo, un auto que se factura a otra dirección), solo confírmalo con el cliente.</p>' : '') +
+      pieConfirmacion('direcciones', 'Confirmar direcciones');
+  }
+
+  function panelRenovacion() {
+    if (renovada) {
+      return '<div class="tarjeta sin-pad"><table class="ajusta"><thead><tr><th style="width: 220px">Póliza nueva</th><th>Concepto</th><th style="width: 130px">Capturada</th><th style="width: 140px">Estatus</th></tr></thead><tbody>' +
+        '<tr><td style="font-weight: 600; color: var(--azul)">' + esc(ren.renovacion.folio) + '</td><td>' + esc(ren.ramo) + '</td><td class="num">26/09/2026</td><td><span class="badge ok">Renovada</span></td></tr></tbody></table></div>' +
+        pieConfirmacion('renovacion');
+    }
+    return '<div class="vacio" style="text-align: left; padding: 8px 0 0">' +
+      (ren.renovacion ? 'La orden <b>' + esc(ren.renovacion.folio) + '</b> está en trámite. Este paso se completa solo cuando se capture la póliza renovada.'
+        : 'Todavía no hay orden de renovación. Genérala desde la pestaña <b>Orden</b>; este paso se completa solo cuando se capture la póliza renovada.') + '</div>';
+  }
+
+  function panelPago() {
+    var bloqueado = pasos.pago.ok ? ' disabled' : '';
+    var op = function (lista, sel) { return '<option value="">Selecciona…</option>' + lista.map(function (x) { return '<option' + (x === sel ? ' selected' : '') + '>' + x + '</option>'; }).join(''); };
+    return '<div class="dos-col">' +
+      '<div class="tarjeta pad" style="background: #F7F9FC; border: 0"><h3 style="font-size: 15px; margin-bottom: 12px">Vigencia actual</h3>' +
+      '<div class="campos" style="margin: 0; padding: 0; border: 0"><div class="campo"><span>Forma de pago</span><b>Contado</b></div><div class="campo"><span>Método de pago</span><b>Agente</b></div></div></div>' +
+      '<div class="tarjeta pad"><h3 style="font-size: 15px; margin-bottom: 12px">Próxima vigencia</h3><div class="dos-col" style="gap: 14px">' +
+      '<label class="campo-form"><span>Forma de pago</span><select class="select" data-pago="forma"' + bloqueado + '>' + op(['Contado', 'Semestral', 'Trimestral', 'Mensual'], formaNueva) + '</select></label>' +
+      '<label class="campo-form"><span>Método de pago</span><select class="select" data-pago="metodo"' + bloqueado + '>' + op(['Agente', 'Domiciliado a tarjeta', 'Transferencia', 'Pago en aseguradora'], metodoNuevo) + '</select></label>' +
+      '</div></div></div>' +
+      (!pasos.pago.ok && !(formaNueva && metodoNuevo) ? '<p class="sub" style="margin: 12px 0 0">Elige forma y método de pago para poder confirmar.</p>' : pieConfirmacion('pago', 'Guardar forma de pago'));
+  }
+
+  function panelCotizaciones() {
+    var cot = [['OT-202602200', 'ANA Seguros', 88707.00, 'Terminada'], ['OT-202602201', 'AXA Seguros', 0, 'Por cancelar'], ['OT-202602202', 'Chubb', 89867.33, 'Terminada'],
+      ['OT-202602203', 'HDI Seguros', 78906.01, 'Terminada'], ['OT-202602204', 'Qualitas', 82462.00, 'Terminada'], ['OT-202602205', 'Seguros Atlas', 102769.00, 'Terminada'],
+      ['OT-202602206', 'Seguros Sura', 78194.00, 'Terminada'], ['OT-202602207', 'Zurich', 118417.21, 'Terminada']];
+    var cotizadas = cot.filter(function (c) { return c[2] > 0; });
+    var mejor = cotizadas.reduce(function (a, c) { return c[2] < a[2] ? c : a; });
+    return '<div class="tarjeta-cab" style="margin-bottom: 12px"><p class="sub" style="margin: 0">Solo cuando el cliente pide comparar con varias aseguradoras. Cada cotización es una orden de trabajo.</p>' +
+      '<button class="btn chico">' + icono('M12 5v14M5 12h14', 15) + ' Nueva cotización</button></div>' +
+      '<div class="tarjeta sin-pad"><table class="ajusta"><thead><tr><th style="width: 160px">Orden</th><th>Aseguradora</th><th style="width: 120px">Fecha</th><th class="der" style="width: 160px">Prima neta</th><th style="width: 160px">Estatus</th></tr></thead><tbody>' +
+      cot.map(function (c) {
+        var esMejor = c === mejor;
+        return '<tr><td class="num">' + c[0] + '</td><td style="font-weight: 500">' + c[1] + (esMejor ? ' <span class="badge ok" style="margin-left: 6px">Más baja</span>' : '') + '</td>' +
+          '<td class="num">14/09/2026</td><td class="der num">' + (c[2] ? dinero(c[2]) : '<span class="sub">—</span>') + '</td>' +
+          '<td><span class="badge ' + (c[3] === 'Terminada' ? 'off' : 'warn') + '">' + c[3] + '</span></td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  function panelOrden() {
+    if (ren.renovacion) {
+      var estatus = renovada ? '<span class="badge ok">Renovada</span>' : '<span class="badge azul">En trámite</span>';
+      return '<div class="tarjeta sin-pad"><table class="ajusta"><thead><tr><th style="width: 220px">Orden</th><th>Concepto</th><th style="width: 130px">Fecha</th><th style="width: 140px">Estatus</th></tr></thead><tbody>' +
+        '<tr><td class="num" style="font-weight: 600">' + esc(ren.renovacion.folio) + '</td><td>' + esc(ren.ramo) + ' · renovación</td><td class="num">26/09/2026</td><td>' + estatus + '</td></tr></tbody></table></div>';
+    }
+    return '<div class="pila" style="gap: 12px; align-items: flex-start"><p class="sub" style="margin: 0">Genera la orden de trabajo para que la aseguradora emita la renovación. Se crea con los datos de esta póliza, las direcciones confirmadas y la forma de pago elegida.</p>' +
+      '<button class="btn primario">' + icono('M12 5v14M5 12h14', 16) + ' Generar orden de renovación</button></div>';
+  }
+
+  function panelBitacora() {
+    return '<form id="form-bitacora" class="bitacora-nueva"><label for="nota" class="sr">Agregar comentario a la bitácora</label>' +
+      '<input id="nota" class="select" style="flex: 1 1 auto" placeholder="Escribe un comentario y presiona Enter" autocomplete="off">' +
+      '<button class="btn primario" type="submit">Agregar</button></form>' +
+      '<div>' + bitacora.slice().reverse().map(function (e) {
+        return '<div class="evento"><span class="evento-punto" aria-hidden="true"></span><div class="pila"><span style="font-size: 14px">' + esc(e[2]) + '</span><span class="sub">' + e[0] + ' · ' + esc(e[1]) + '</span></div></div>';
+      }).join('') + '</div>';
+  }
+
+  var PANELES = { art492: panelArt492, contactos: panelContactos, direcciones: panelDirecciones, renovacion: panelRenovacion, pago: panelPago,
+    cotizaciones: panelCotizaciones, orden: panelOrden, bitacora: panelBitacora };
+
+  // ---------- Pintar ----------
+  function pintar() {
+    var hechos = DEF.filter(function (d) { return pasos[d.k].ok; }).length;
+    var completo = hechos === DEF.length;
+    document.getElementById('av-texto').textContent = completo ? 'Proceso de renovación completo' : hechos + ' de ' + DEF.length + ' pasos completos';
+    document.getElementById('av-sub').textContent = completo
+      ? 'Esta póliza ya no aparecerá en el panel de renovaciones.'
+      : 'Falta: ' + DEF.filter(function (d) { return !pasos[d.k].ok; }).map(function (d) { return d.label.toLowerCase(); }).join(', ') + '.';
+    document.getElementById('av-barra').style.width = (hechos / DEF.length * 100) + '%';
+    document.getElementById('av-barra').className = completo ? 'completa' : '';
+
+    document.getElementById('pasos').innerHTML = DEF.map(function (d) {
+      var ok = pasos[d.k].ok, on = d.k === actual;
+      return '<button role="tab" class="paso' + (on ? ' on' : '') + (ok ? ' hecho' : '') + '" data-k="' + d.k + '" aria-selected="' + on + '">' +
+        '<span class="paso-num">' + (ok ? icono('M20 6L9 17l-5-5', 14) : d.n) + '</span>' +
+        '<span class="pila" style="gap: 1px"><span class="paso-label">' + d.label + '</span><span class="paso-estado">' + (ok ? 'Completo' : 'Pendiente') + '</span></span></button>';
+    }).join('');
+    document.getElementById('extras').innerHTML = EXTRAS.map(function (x) {
+      var on = x.k === actual;
+      return '<button role="tab" class="tab' + (on ? ' on' : '') + '" data-k="' + x.k + '" aria-selected="' + on + '">' + x.label + '</button>';
+    }).join('');
+
+    var def = DEF.filter(function (d) { return d.k === actual; })[0];
+    var titulo = def ? '<div class="panel-titulo"><h2 style="font-size: 17px">' + def.n + '. ' + def.label + '</h2><span class="sub">' + def.desc + '</span></div>'
+      : '<div class="panel-titulo"><h2 style="font-size: 17px">' + EXTRAS.filter(function (x) { return x.k === actual; })[0].label + '</h2></div>';
+    var siguiente = def && def.n < DEF.length ? '<div class="panel-pie"><button class="btn" data-ir="' + DEF[def.n].k + '">Siguiente: ' + DEF[def.n].label + ' ' + icono('M9 6l6 6-6 6', 16) + '</button></div>' : '';
+    document.getElementById('panel').innerHTML = titulo + PANELES[actual]() + siguiente;
+  }
+
+  // ---------- Eventos ----------
+  document.querySelector('.pasos-nav').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-k]');
+    if (b) { actual = b.dataset.k; pintar(); }
+  });
+  document.getElementById('panel').addEventListener('click', function (e) {
+    var c = e.target.closest('[data-confirmar]'), d = e.target.closest('[data-deshacer]'), ir = e.target.closest('[data-ir]');
+    if (c) { pasos[c.dataset.confirmar] = confirmado(USUARIO, HOY_TXT); bitacora.push([HOY_TXT, USUARIO, 'Paso confirmado: ' + DEF.filter(function (x) { return x.k === c.dataset.confirmar; })[0].label + '.']); pintar(); }
+    if (d) { pasos[d.dataset.deshacer] = { ok: false }; pintar(); }
+    if (ir) { actual = ir.dataset.ir; pintar(); }
+  });
+  document.getElementById('panel').addEventListener('change', function (e) {
+    var t = e.target;
+    if (!t.dataset.dir && !t.dataset.pago) return; // otros campos (como la bitácora) no redibujan
+    if (t.dataset.dir === 'riesgo') direccionRiesgo = +t.value;
+    if (t.dataset.dir === 'fiscal') direccionFiscal = +t.value;
+    if (t.dataset.pago === 'forma') formaNueva = t.value;
+    if (t.dataset.pago === 'metodo') metodoNuevo = t.value;
+    pintar();
+  });
+  document.getElementById('panel').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var input = document.getElementById('nota');
+    if (!input.value.trim()) return;
+    bitacora.push([HOY_TXT, USUARIO, input.value.trim()]);
+    pintar();
+    document.getElementById('nota').focus();
+  });
+
+  pintar();
+})();
+</script>
+</body>
+</html>

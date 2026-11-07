@@ -11,6 +11,7 @@ Plataforma web para administrar la cartera de seguros de Prolomer. Con el tiempo
 | Clientes | `prototipo/clientes.html` | Buscador, contratantes, contactos, resumen del cliente y pólizas por ramo |
 | Ficha del cliente | `prototipo/ficha.html?id=2550` | Datos generales, cartera por ramo, documentos, contactos, tarjetas, portales y direcciones |
 | Renovaciones | `prototipo/renovaciones.html` | Pólizas que vencen en 40 días o vencidas sin renovar, por urgencia, con vista de ejecutivo y de administrador |
+| Proceso de renovación | `prototipo/renovacion.html?num=19-211-4566-0` | Los 5 pasos del proceso (art. 492, contactos, direcciones, renovación, forma de pago) con avance, más cotizaciones, orden y bitácora |
 | Ficha de póliza | `prototipo/poliza.html?num=GMI-10879` | Datos, importes, documentos, endosos, órdenes, recibos, asegurados, beneficiarios, condiciones, adicionales y bitácora |
 
 Para verlas, descarga el repositorio y abre `prototipo/clientes.html` en el navegador (doble clic). No necesitan servidor.
@@ -37,6 +38,7 @@ prototipo/
   ficha.html             Ficha del cliente
   poliza.html            Ficha de póliza
   renovaciones.html      Renovaciones próximas y vencidas
+  renovacion.html        Proceso de renovación de una póliza
   assets/
     siap.css             Estilos compartidos
     siap.js              Menú lateral y utilidades

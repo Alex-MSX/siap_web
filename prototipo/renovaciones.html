@@ -80,8 +80,6 @@
   SIAP.montarMenu('renovaciones');
 
   var USUARIO = 'Sofía Ramírez'; // ejecutivo "conectado" en el prototipo
-  var POLIZAS_CON_FICHA = {};
-  SIAP_DATOS.clientes.forEach(function (c) { c.polizas.forEach(function (p) { POLIZAS_CON_FICHA[p.num] = true; }); });
 
   // Rangos de urgencia (los mismos colores que SIAP)
   var RANGOS = [
@@ -149,8 +147,7 @@
       '<th class="der" style="width: 130px">Prima</th><th style="width: 70px">Mon.</th></tr>';
 
     document.getElementById('r-filas').innerHTML = lista.map(function (r) {
-      var conFicha = POLIZAS_CON_FICHA[r.num];
-      return '<tr class="clic"' + (conFicha ? ' data-num="' + esc(r.num) + '" title="Doble clic para abrir la póliza"' : ' title="Póliza de ejemplo sin ficha"') + '>' +
+      return '<tr class="clic" data-num="' + esc(r.num) + '" title="Doble clic para abrir el proceso de renovación">' +
         '<td><span class="dias dias-' + r.rango.k + '"><span class="urg-punto" aria-hidden="true"></span>' + textoDias(r.dias) + '</span></td>' +
         '<td class="envuelve" style="font-weight: 500">' + esc(r.contratante) + '</td>' +
         '<td class="envuelve num" style="color: var(--azul); font-weight: 600">' + esc(r.num) + '</td>' +
@@ -195,7 +192,7 @@
   document.getElementById('r-ejec').addEventListener('change', function (e) { estado.ejecutivo = e.target.value; pintar(); });
   document.getElementById('r-filas').addEventListener('dblclick', function (e) {
     var fila = e.target.closest('tr[data-num]');
-    if (fila) location.href = 'poliza.html?num=' + encodeURIComponent(fila.dataset.num);
+    if (fila) location.href = 'renovacion.html?num=' + encodeURIComponent(fila.dataset.num);
   });
 
   pintar();
