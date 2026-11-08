@@ -61,10 +61,13 @@
             </label>
           </div>
         </div>
-        <table class="ajusta">
-          <thead id="r-cabecera"></thead>
-          <tbody id="r-filas"></tbody>
-        </table>
+        <!-- Ancho mínimo: en pantallas chicas aparece barra horizontal en vez de aplastar el contratante -->
+        <div class="scroll-x">
+          <table id="r-tabla" class="ajusta" style="min-width: 1180px">
+            <thead id="r-cabecera"></thead>
+            <tbody id="r-filas"></tbody>
+          </table>
+        </div>
         <div id="r-vacio" class="vacio" hidden>No hay renovaciones con estos filtros.</div>
         <div id="r-pie" class="sub" style="padding: 12px 18px; border-top: 1px solid var(--linea)"></div>
       </section>
@@ -108,7 +111,7 @@
   function celdaRenovacion(r) {
     if (!r.renovacion) return '<span class="badge warn">Sin orden</span> <button class="btn chico" style="margin-left: 6px">Crear orden</button>';
     if (r.renovacion.tipo === 'ot') return '<span class="badge azul">' + esc(r.renovacion.folio) + '</span> <span class="sub">En trámite</span>';
-    return '<span class="badge ok">Póliza renovada</span> <span class="num" style="font-size: 13px">' + esc(r.renovacion.folio) + '</span>';
+    return '<span class="badge ok">Póliza renovada</span> <span class="num" style="font-size: 13px; white-space: nowrap">' + esc(r.renovacion.folio) + '</span>';
   }
 
   function visibles(ignorarUrgencia) {
@@ -140,19 +143,22 @@
 
     // Cabecera (la columna Ejecutivo solo en la vista de administrador)
     var admin = estado.vista === 'admin';
-    document.getElementById('r-cabecera').innerHTML = '<tr>' +
-      '<th style="width: 190px">Urgencia</th><th>Contratante</th><th style="width: 170px">Póliza</th>' +
-      '<th style="width: 260px">Renovación</th><th style="width: 120px">Fin de vigencia</th><th style="width: 170px">Ramo</th>' +
-      (admin ? '<th style="width: 150px">Ejecutivo</th>' : '') +
-      '<th class="der" style="width: 130px">Prima</th><th style="width: 70px">Mon.</th></tr>';
+    // Anchos fijos por columna; el contratante toma el resto (mínimo 240 px gracias al ancho mínimo de la tabla)
+    var COLS = [['Urgencia', 180], ['Contratante', 0], ['Póliza', 200], ['Renovación', 300], ['Fin de vigencia', 115], ['Ramo', 160]]
+      .concat(admin ? [['Ejecutivo', 140]] : []).concat([['Prima', 120, 'der'], ['Mon.', 84]]);
+    var fijos = COLS.reduce(function (a, c) { return a + c[1]; }, 0);
+    document.getElementById('r-tabla').style.minWidth = (fijos + 240) + 'px';
+    document.getElementById('r-cabecera').innerHTML = '<tr>' + COLS.map(function (c) {
+      return '<th' + (c[2] ? ' class="' + c[2] + '"' : '') + (c[1] ? ' style="width: ' + c[1] + 'px"' : '') + '>' + c[0] + '</th>';
+    }).join('') + '</tr>';
 
     document.getElementById('r-filas').innerHTML = lista.map(function (r) {
       return '<tr class="clic" data-num="' + esc(r.num) + '" title="Doble clic para abrir el proceso de renovación">' +
         '<td><span class="dias dias-' + r.rango.k + '"><span class="urg-punto" aria-hidden="true"></span>' + textoDias(r.dias) + '</span></td>' +
         '<td class="envuelve" style="font-weight: 500">' + esc(r.contratante) + '</td>' +
-        '<td class="envuelve num" style="color: var(--azul); font-weight: 600">' + esc(r.num) +
+        '<td class="num"><span style="color: var(--azul); font-weight: 600; white-space: nowrap">' + esc(r.num) + '</span>' +
           (r.domiciliacion ? '<br><span class="badge dom" title="' + (r.domiciliacion.estado === 'domiciliada' ? 'Domiciliada a ' : 'En proceso de domiciliarse a ') + esc(r.domiciliacion.tarjeta) + '">' + (r.domiciliacion.estado === 'domiciliada' ? 'Domiciliada' : 'Domiciliación en proceso') + '</span>' : '') + '</td>' +
-        '<td class="envuelve">' + celdaRenovacion(r) + '</td>' +
+        '<td>' + celdaRenovacion(r) + '</td>' +
         '<td class="num">' + r.fin + '</td>' +
         '<td class="envuelve">' + esc(r.ramo) + '</td>' +
         (admin ? '<td class="envuelve">' + esc(r.ejecutivo) + '</td>' : '') +
