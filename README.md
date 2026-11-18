@@ -1,5 +1,7 @@
 # SIAP Web
 
+> **¿Retomando el proyecto?** Empieza por [`docs/estado.md`](docs/estado.md): en qué vamos, qué sigue y cómo trabajamos.
+
 Plataforma web para administrar la cartera de seguros de Prolomer. Con el tiempo sustituirá a SIAP, la aplicación de escritorio en VB.NET.
 
 ## Estado actual
@@ -45,6 +47,7 @@ prototipo/
     datos-ejemplo.js     Datos inventados para el prototipo
     img/                 Logo
 docs/
+  estado.md              En qué vamos y qué sigue (leer primero)
   decisiones.md          Decisiones de diseño y supuestos por confirmar
   base-de-datos.md       Diseño y revisión de las tablas de MySQL
 ```
