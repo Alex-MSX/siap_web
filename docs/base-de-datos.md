@@ -13,27 +13,31 @@ Notas de diseño de las tablas de SIAP Web. Cada tabla se revisa contra la estru
 
 ### Tabla `clientes`
 
-Estructura actual (diseñada por Alex): `id_cliente`, `persona` (FISICA/MORAL), `nombre`, `paterno`, `materno`, `razon_social`, `contratante` (columna generada), `fecha_nacimiento`, `genero`, `rfc`, `id_grupo`, `id_ejecutivo`, `id_usuario`, `fecha_actualizacion`, `documentos` (JSON), `fecha_creacion`.
+Estructura actual (diseñada por Alex, actualizada el 18/11/2026): `id_cliente`, `persona` (FISICA/MORAL), `nombre`, `paterno`, `materno`, `razon_social`, `contratante` (columna generada), `fecha_nacimiento`, `genero`, `rfc`, `id_grupo`, `id_ejecutivo`, `id_usuario`, `estatus` (ACTIVO/INACTIVO), `fecha_creacion`.
 
 **Decidido**
 
-- `contratante` se mantiene como columna generada, en orden nombre, paterno, materno (o razón social).
-- `rfc` se queda en `clientes`: identifica a la persona o empresa y es por lo que se busca. Puede ser distinto al RFC de facturación (ver perfiles fiscales).
+- **`id_cliente` es el mismo ID de Sicas** (no hay `id_sicas` ni tabla de equivalencias). Regla de convivencia: mientras SIAP y la web convivan, solo SIAP da de alta clientes y la web los recibe con su ID; cuando la web tome el control, el `AUTO_INCREMENT` sigue desde el ID más alto y SIAP deja de crear clientes. Si los dos sistemas crearan clientes al mismo tiempo, podrían asignar el mismo número a clientes distintos.
+- `contratante` se mantiene como columna generada, en orden nombre, paterno, materno (o razón social). Con campos que aceptan NULL debe usar `CONCAT_WS` (con `CONCAT`, un solo NULL deja el nombre vacío).
+- `nombre`, `paterno`, `materno` y `genero` aceptan NULL (no aplican a personas morales). **Aplicado.**
+- **`razon_social` es obligatoria** (decisión de Alex); en personas físicas queda vacía. Si la versión de MySQL lo permite (8.0.16+ o MariaDB 10.2+), se recomienda un `CHECK` que exija razón social en morales y nombre y paterno en físicas.
+- **`fecha_nacimiento` en personas morales es la fecha de constitución.** En pantalla la etiqueta cambia según el tipo de persona.
+- `rfc` se queda en `clientes` y es obligatorio (para extranjeros o público en general existen los RFC genéricos): identifica a la persona o empresa y es por lo que se busca. Puede ser distinto al RFC de facturación (ver perfiles fiscales).
+- **`estatus` ACTIVO / INACTIVO:** INACTIVO significa registro que ya no se usa (duplicado, captura por error, baja solicitada), **no** cliente sin pólizas vigentes (eso se calcula). **Aplicado.**
 - **El vendedor no va en `clientes`:** es de cada póliza. Un cliente puede tener pólizas de distintos vendedores.
 - **Sin columna `cliente_desde`:** se calcula como la fecha de inicio de su póliza más antigua. Al migrar desde Sicas, si existe una fecha de alta, se carga en `fecha_creacion`.
-- **"Activo" no significa "tiene pólizas vigentes":** eso se calcula. Un cliente sin pólizas vigentes sigue siendo cliente. Si se agrega un campo de baja, es solo para registros que ya no deben usarse (duplicados fusionados, capturas por error, bajas solicitadas); nombre sugerido `estatus` (ACTIVO / DUPLICADO / BAJA).
 - **El régimen fiscal no va en `clientes`:** va en su perfil fiscal.
+- `fecha_actualizacion` (era la fecha de la constancia fiscal) pasa a `perfiles_fiscales.fecha_emision_csf`. **Columna ya eliminada de `clientes`.**
+- `documentos` (JSON) pasa a una tabla `cliente_documentos` (identificación oficial, acta constitutiva, etc.). La constancia fiscal se guarda en el perfil fiscal. **Columna ya eliminada de `clientes`.**
 
-**Cambios recomendados (pendientes de aplicar)**
+**Pendiente de aplicar**
 
-1. Agregar `id_sicas` (único) para enlazar con el ID del cliente en SIAP/Sicas y poder sincronizar.
-2. Permitir NULL en `genero` (las personas morales no tienen género; hoy quedan como MASCULINO).
-3. Permitir NULL en `nombre`, `paterno` y `materno` (no aplican a personas morales).
-4. Pasar todo el texto de la tabla a `utf8mb4` (hoy hay mezcla de `latin1_spanish_ci` y `utf8mb4_bin`), para evitar errores de collation en los JOIN.
-5. Mover `documentos` (JSON) a una tabla `cliente_documentos` (identificación oficial, acta constitutiva, etc.). La constancia fiscal se guarda en el perfil fiscal.
-6. `rfc`: reducir a `varchar(13)` y agregar índice.
-7. `fecha_actualizacion` (confirmado: es la fecha de la constancia fiscal): se migra a `perfiles_fiscales.fecha_emision_csf` y se elimina de `clientes`.
-8. Convertir `id_grupo` e `id_ejecutivo` (hoy solo índices) en llaves foráneas reales.
+1. Pasar todo el texto de la tabla a `utf8mb4` (hoy sigue en `latin1_spanish_ci`), para evitar errores de collation en los JOIN.
+2. `rfc`: reducir a `varchar(13)` y agregar índice.
+3. Confirmar que `id_grupo` e `id_ejecutivo` sean llaves foráneas reales (no solo índices).
+4. Revisar que la expresión de `contratante` use `CONCAT_WS`.
+5. Agregar el `CHECK` de persona física/moral si la versión de MySQL lo permite.
+6. Crear `perfiles_fiscales` y `cliente_documentos`, y pasar ahí la constancia y los documentos que estaban en las columnas eliminadas.
 
 ### Llaves foráneas de `clientes`
 
@@ -130,4 +134,3 @@ Una sola operación, en **transacción** (se aplica todo o nada):
 
 ## Por confirmar
 
-- `fecha_nacimiento` en personas morales: ¿se usa como fecha de constitución?
