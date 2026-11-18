@@ -34,21 +34,25 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 **Base de datos** (`docs/base-de-datos.md`):
 
-- Tabla `clientes`: diseño cerrado y cambios aplicados en parte por Alex (18/11/2026). `id_cliente` es el mismo ID de Sicas.
+- Tabla `clientes`: estructura idéntica en MySQL local y en la web (`utf8mb4_general_ci`, con `curp` y `fecha_modificacion`). `id_cliente` es el mismo ID de Sicas.
 - Modelo definido de direcciones, perfil fiscal (1 a 1 con el cliente) y facturación por póliza.
 - Proceso de renovación: auditado; recomendaciones documentadas.
 
+**Clientes de Access a MySQL local: terminado (18/11/2026).** SIAP copia cada cliente a MySQL local al darlo de alta, al reasignar ejecutivo y al abrir su consulta. La rutina "Sincronizar todos" copió los 4,829 clientes en producción, sin errores. Detalle, mapa de columnas y reglas en `docs/base-de-datos.md`, sección "Sincronización de clientes".
+
 ## Lo que sigue
 
-**Siguiente chat: API de clientes.** Idea de Alex: igual que hoy SIAP manda cada póliza nueva a MySQL del dominio con una API propia, hacer lo mismo con los clientes. SIAP sigue mandando; la web solo recibe, con el mismo ID. El día que se apague SIAP, la web ya está al día.
+**Siguiente chat: "SIAP web · API de clientes a la nube".** Mandar los clientes de MySQL local a la MySQL de la web. Decisiones ya tomadas en `docs/decisiones.md` ("Sincronización y APIs"). Faltan tres piezas, cada una se prueba antes de seguir:
 
-Primer paso: que Alex explique cómo funciona su API de pólizas (dónde vive, cómo la llama SIAP, qué pasa si falla) para copiar el mismo patrón. Tres temas a tener presentes:
+1. **La API** `public_html/api_web/clientes.php`: recibe clientes y los guarda en la MySQL de la web, con toda la seguridad acordada (configuración fuera de `public_html`, usuario de MySQL propio, clave nueva, validación, códigos HTTP correctos).
+2. **El programa de envío** en el servidor: busca en MySQL local los clientes con `fecha_modificacion` posterior al último envío y los manda a la API en paquetes. Solo avanza su marca cuando la API confirma.
+3. **La tarea programada** de Windows que lo corre cada pocos minutos y arranca sola al prender el servidor.
 
-1. Copiar también los **cambios**, no solo las altas.
-2. **Carga inicial** de los clientes que ya existen (una sola vez).
-3. **Qué pasa si falla** el envío (saber cuáles no llegaron para reenviarlos).
+Primer paso del chat nuevo: crear en cPanel la carpeta de configuración fuera de `public_html` y el usuario de MySQL propio para la API.
 
-**Pendientes de la tabla `clientes`:** pasar a `utf8mb4`, `rfc` a `varchar(13)` con índice, confirmar llaves foráneas de `id_grupo` e `id_ejecutivo`, revisar que `contratante` use `CONCAT_WS`, `CHECK` de persona física/moral si la versión lo permite, crear `perfiles_fiscales` y `cliente_documentos`. Para revisarlo hacen falta `SHOW CREATE TABLE clientes;` y `SELECT VERSION();`.
+**Pendientes chicos de SIAP:** que `db.Ejecutar` no muestre `MsgBox` en la sincronización; mientras tanto, dar de alta en MySQL cada ejecutivo nuevo de Sicas. Guardar `Sexo` como 1 (no 255).
+
+**Pendientes de la tabla `clientes`:** calidad del RFC (886 sin RFC, 1,242 con largo raro) y después volverlo obligatorio; `CHECK` de persona física/moral; homologar nombres de índices entre local y web; tabla `usuarios` y llave foránea de `id_usuario`; crear `perfiles_fiscales` y `cliente_documentos`.
 
 **Preguntas abiertas de diseño:** ver la sección "Por confirmar" de `docs/decisiones.md` y de `docs/base-de-datos.md`.
 
@@ -60,3 +64,5 @@ Primer paso: que Alex explique cómo funciona su API de pólizas (dónde vive, c
 - Nombres de personas: nombre, paterno, materno.
 - El vendedor es de cada póliza, no del cliente.
 - No guardar lo que se puede calcular.
+- Mientras exista Sicas, Access manda. MySQL local y la web reciben copias con el mismo ID.
+- Ninguna puerta de la oficina se abre hacia internet: los envíos salen del servidor hacia la web.
