@@ -56,6 +56,21 @@ if (-not $tengoCandado) {
 # ---------------------------------------------------------------------------
 try {
     $cfg = Get-Content -Path (Join-Path $carpeta 'config.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+
+    # MySql.Data.dll necesita otras DLL de la carpeta de SIAP (por ejemplo
+    # System.Threading.Tasks.Extensions). SIAP las encuentra con su .exe.config;
+    # PowerShell no tiene ese archivo, así que aquí se le dice que las busque
+    # en la misma carpeta, aunque la versión no sea exactamente la que pide.
+    $carpetaDll = Split-Path -Path $cfg.mysql_dll -Parent
+    $resolver = {
+        param($remitente, $evento)
+        $nombre = (New-Object System.Reflection.AssemblyName($evento.Name)).Name
+        $ruta = Join-Path $carpetaDll ($nombre + '.dll')
+        if (Test-Path $ruta) { return [System.Reflection.Assembly]::LoadFrom($ruta) }
+        return $null
+    }.GetNewClosure()
+    [System.AppDomain]::CurrentDomain.add_AssemblyResolve([System.ResolveEventHandler]$resolver)
+
     [void][Reflection.Assembly]::LoadFrom($cfg.mysql_dll)
 
     $csb = New-Object MySql.Data.MySqlClient.MySqlConnectionStringBuilder
