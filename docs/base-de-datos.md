@@ -94,7 +94,29 @@ Estructura actual, **idéntica en MySQL local y en MySQL web** (homologada el 18
 - SIAP guardaba `Sexo` como 255 para femenino (mandaba un Boolean). Alex lo corrige para guardar 1; la copia ya acepta los dos.
 - Los ejecutivos también tendrán que sincronizarse de Access a MySQL.
 
-**De MySQL local a la web (siguiente paso).** Ver `docs/estado.md`.
+**De MySQL local a la web (terminado el 18/11/2026).**
+
+- **API** `public_html/api_web/clientes.php` (código en `api_web/clientes.php`). Recibe `{"clientes": [...]}` por POST con `Authorization: Bearer <clave>`. Valida cada cliente (persona, nombre y paterno en físicas, razón social en morales, género en físicas, fechas reales, largo de RFC y CURP, ejecutivo y grupo existentes en la web, estatus) y guarda con `INSERT ... ON DUPLICATE KEY UPDATE`. No recibe `contratante` (es generada) ni `fecha_modificacion` (la pone MySQL de la web). Respuestas: 200 con `guardados` y `rechazados` (con motivo), 400, 403, 405 y 500.
+- **Secretos en el hosting:** `/home/commxprolomer/siap_config/api_web.php` (permisos 600; clave de la API y acceso a MySQL). Log de la API: `/home/commxprolomer/siap_config/api_web.log` (intentos sin clave, rechazados y fallas).
+- **Usuario de MySQL web:** `commxprolomer_siap_api`, con SELECT, INSERT y UPDATE sobre `commxprolomer_siap` (cPanel no permite permisos por tabla). Sin DELETE ni cambios de estructura.
+- **Programa de envío:** `C:\SIAP_Sync\sync_clientes.ps1` con `config.json` al lado (ejemplo sin secretos en `sincronizador/config.ejemplo.json`). Usuario de MySQL local `siap_sync`: SELECT en `clientes`, SELECT y UPDATE en `sincronizacion`.
+- **Carga inicial:** 4,829 clientes, 0 rechazados.
+
+**Tabla `sincronizacion` (MySQL local)** (SQL en `sincronizador/instalar_mysql_local.sql`)
+
+| Columna | Para qué |
+|---|---|
+| `tabla` | PK. Qué se envía (`clientes`; después `ejecutivos`, `polizas`) |
+| `ultima_fecha` | `fecha_modificacion` del último registro confirmado por la web |
+| `ultimo_id` | ID del último registro confirmado (desempate con la misma fecha) |
+| `ultima_revision` | Última vez que corrió el envío, aunque no hubiera cambios |
+| `ultimo_resultado` | `OK: ...` o `ERROR: ...` de la última vuelta |
+
+Para reenviar todo desde cero (por ejemplo, tras vaciar la tabla de la web): `UPDATE siap.sincronizacion SET ultima_fecha = '2000-01-01 00:00:00', ultimo_id = 0 WHERE tabla = 'clientes';` (con el usuario administrador). Reenviar no duplica nada.
+
+### Tabla `ejecutivos`
+
+Estructura igual en las dos bases (18/11/2026): `id_ejecutivo` (PK), `nombre`, `paterno`, `materno`, `puesto`, `correo`, `telefono`, `extension`. Se quitó `whatsapp`. Los IDs son los mismos en local y web (29 "SIN ASIGNAR", 41, 45, 46, 47, 49, 50, 51). Por ahora, cada ejecutivo nuevo se da de alta a mano en las dos bases.
 
 ### Llaves foráneas de `clientes`
 

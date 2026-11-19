@@ -33,6 +33,17 @@
 - **El que envía manda siempre el registro completo** y la web queda igual a lo que recibió (sin la regla de "si llega vacío, conserva el valor anterior").
 - **Collation `utf8mb4_general_ci`** en todas las tablas de las dos bases (el hosting usa MariaDB, que no reconoce `utf8mb4_0900_ai_ci`).
 
+### Envío de clientes a la web (18/11/2026)
+
+- **Datos malos en un paquete: se guardan los buenos y se rechazan los malos con su motivo** (opción A). El programa de envío avanza su marca y anota los rechazados en su log. El cliente rechazado se vuelve a mandar solo cuando alguien lo corrige y cambia su `fecha_modificacion`. Se descartó "todo o nada" porque un solo cliente mal capturado detendría la sincronización de todos.
+- **Falla del servidor o de la conexión:** la API contesta 500 sin guardar nada de ese paquete, y el programa no avanza la marca; reintenta en la siguiente vuelta.
+- **Paquetes de 200 clientes** como máximo (y 2 MB).
+- **El programa de envío es un script de PowerShell**, no un programa de VB.NET: no hay que compilar nada y se cambia con el Bloc de notas. Usa el mismo `MySql.Data.dll` de SIAP (`C:\Program Files (x86)\Prolomer\Setup_SIAP`).
+- **La marca vive en una tabla de MySQL local** (`sincronizacion`, un renglón por tabla que se envía), no en un archivo: se consulta desde Workbench y servirá igual para ejecutivos y pólizas. Se avanza con dos valores, `fecha_modificacion` e `id_cliente`, para no perder ni repetir clientes con la misma fecha, y no se toman los cambios de los últimos 5 segundos.
+- **Tarea programada cada 5 minutos, como SYSTEM**, sin dos copias a la vez y con límite de 30 minutos por vuelta.
+- **Riesgo aceptado (por ahora):** los usuarios del servidor son administradores y pueden leer la configuración del programa. Pendiente quitarles ese permiso.
+- **Ejecutivos:** se quitó la columna `whatsapp` de `ejecutivos` (en las dos bases) y `puesto` queda "EJECUTIVO DE CUENTA". Los 8 ejecutivos se cargaron en la web con los mismos IDs que la local.
+
 ## Agregados al diseño (para validar)
 
 - Franja de resumen del cliente: pólizas vigentes, prima vigente, recibos pendientes y próxima renovación.

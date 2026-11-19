@@ -40,17 +40,30 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 **Clientes de Access a MySQL local: terminado (18/11/2026).** SIAP copia cada cliente a MySQL local al darlo de alta, al reasignar ejecutivo y al abrir su consulta. La rutina "Sincronizar todos" copió los 4,829 clientes en producción, sin errores. Detalle, mapa de columnas y reglas en `docs/base-de-datos.md`, sección "Sincronización de clientes".
 
+**Clientes de MySQL local a la web: terminado (18/11/2026).** Flujo completo funcionando: Access → MySQL local → MySQL web.
+
+- **API** `public_html/api_web/clientes.php` (código en `api_web/` del repositorio): clave por `Authorization`, secretos en `/home/commxprolomer/siap_config/api_web.php` (fuera de `public_html`), usuario de MySQL `commxprolomer_siap_api` con solo SELECT, INSERT y UPDATE. Probada: 405 sin POST, 403 sin clave, rechazo con motivo, guardado.
+- **Programa de envío** `C:\SIAP_Sync\sync_clientes.ps1` en el servidor de la oficina (código en `sincronizador/`). Su marca vive en la tabla `siap.sincronizacion` de MySQL local; usuario local `siap_sync` (solo lectura de `clientes`).
+- **Tarea programada** "SIAP Sync Clientes": cada 5 minutos y al prender el servidor, como SYSTEM.
+- **Carga inicial:** 4,829 clientes en 25 paquetes, 0 rechazados. La web tiene los mismos 4,829.
+- **Cómo revisar que sigue vivo:** en Workbench, `SELECT * FROM siap.sincronizacion;` (`ultima_revision` debe tener menos de 5 minutos y `ultimo_resultado` decir OK). Detalle en `C:\SIAP_Sync\logs\clientes_AAAA-MM.log` (solo anota envíos, rechazados y errores).
+
 ## Lo que sigue
 
-**Siguiente chat: "SIAP web · API de clientes a la nube".** Mandar los clientes de MySQL local a la MySQL de la web. Decisiones ya tomadas en `docs/decisiones.md` ("Sincronización y APIs"). Faltan tres piezas, cada una se prueba antes de seguir:
+**Siguiente chat: por decidir.** Opciones naturales:
 
-1. **La API** `public_html/api_web/clientes.php`: recibe clientes y los guarda en la MySQL de la web, con toda la seguridad acordada (configuración fuera de `public_html`, usuario de MySQL propio, clave nueva, validación, códigos HTTP correctos).
-2. **El programa de envío** en el servidor: busca en MySQL local los clientes con `fecha_modificacion` posterior al último envío y los manda a la API en paquetes. Solo avanza su marca cuando la API confirma.
-3. **La tarea programada** de Windows que lo corre cada pocos minutos y arranca sola al prender el servidor.
+1. **"SIAP web · Primera pantalla con datos reales"**: login con usuarios y permisos, y la pantalla de Clientes leyendo la MySQL de la web (fase 1 del plan: consulta de solo lectura).
+2. **"SIAP web · Pólizas"**: diseñar la tabla `polizas` y llevarlas a la web por el mismo camino que los clientes.
 
-Primer paso del chat nuevo: crear en cPanel la carpeta de configuración fuera de `public_html` y el usuario de MySQL propio para la API.
+**Pendientes de seguridad:**
 
-**Pendientes chicos de SIAP:** que `db.Ejecutar` no muestre `MsgBox` en la sincronización; mientras tanto, dar de alta en MySQL cada ejecutivo nuevo de Sicas. Guardar `Sexo` como 1 (no 255).
+- Cambiar la clave de la API de pólizas (`public_html/api`) y la contraseña del usuario de MySQL que quedaron expuestas en un chat anterior.
+- Los compañeros que entran por escritorio remoto al servidor son administradores de Windows, así que pueden leer `C:\SIAP_Sync\config.json` (y la configuración de SIAP). Quitarles el permiso de administrador en ese servidor; para usar SIAP no lo necesitan. Se aceptó el riesgo por ahora: la contraseña de `siap_sync` solo lee clientes y la clave de la API no puede borrar nada.
+- Confirmar si la base `commxprolomer_siap` la comparten la API de pólizas y n8n (probablemente sí). Si es así, el usuario de la API de clientes también podría escribir en esas tablas.
+
+**Pendientes chicos de SIAP:** que `db.Ejecutar` no muestre `MsgBox` en la sincronización. Guardar `Sexo` como 1 (no 255).
+
+**Ejecutivos:** se dan de alta a mano **en las dos bases** (local y web) con el mismo ID cuando entra alguien nuevo. Si un cliente llega a la web con un ejecutivo que no existe allá, la API lo rechaza ("el ejecutivo N no existe en la web") y queda en el log. Más adelante, sincronizarlos como a los clientes.
 
 **Pendientes de la tabla `clientes`:** calidad del RFC (886 sin RFC, 1,242 con largo raro) y después volverlo obligatorio; `CHECK` de persona física/moral; homologar nombres de índices entre local y web; tabla `usuarios` y llave foránea de `id_usuario`; crear `perfiles_fiscales` y `cliente_documentos`.
 
