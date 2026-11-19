@@ -211,5 +211,29 @@ Una sola operación, en **transacción** (se aplica todo o nada):
 - **Póliza renovada ya pagada:** en la práctica no ocurre (si el cliente no renueva, no paga). Como salvaguarda, si tuviera recibos cobrados el aviso lo marca en rojo.
 - **Sin deshacer:** si el cliente cambia de opinión, se tramita una rehabilitación de póliza desde Solicitudes.
 
+## Bitácora de Sicas (análisis del 18/11/2026, para el chat de pólizas)
+
+**Cómo funciona hoy:** una sola tabla `Bitacora` para todo. Cada registro de Sicas (cliente, póliza, recibo, orden, endoso, tarea) tiene una columna `ClaveBit` con un texto generado (prefijo + código + iniciales del usuario, por ejemplo `CLI...`, `POL...`, `REC...`, `OT...`, `TAR...`), y los renglones de `Bitacora` apuntan a ese texto. Columnas: `ID`, `ClaveBit`, `Fecha`, `Hora`, `Comentario`, `UGenero`, `Prioridad`, `Attachment`, `Procedencia`, `IsAutom`, `ClaveBitRel`, `Destino`, `IsLinkMail`. Hay registros desde 2005.
+
+**Lo bueno:** una bitácora central, con usuario y fecha, que distingue lo automático de lo manual y admite adjuntos. 20 años de historia que vale la pena migrar.
+
+**Problemas:**
+
+1. **Liga por un texto inventado (`ClaveBit`)** en lugar de tipo + ID. No puede haber llave foránea; si la clave falta o se repite, el renglón queda huérfano o en el registro equivocado.
+2. **Fecha y hora en dos columnas**, en lugar de un solo `datetime`.
+3. **Lo automático se marca dos veces:** con `IsAutom` y con un "(A)" pegado al usuario. El usuario se guarda como texto, no como ID.
+4. **`Procedencia` repite lo que ya dice el prefijo de `ClaveBit`.**
+5. **Eventos automáticos guardados como prosa** ("Se cobró el recibo y se pagó con TRANSFERENCIA..."). El dato real (fecha y forma de pago) debe estar en el recibo. La bitácora solo lo narra y no se puede consultar con confianza.
+6. **`ClaveBitRel`** liga, por ejemplo, el renglón de un recibo con el de su póliza. Esa relación ya existe en los datos (el recibo pertenece a la póliza).
+7. **Mezcla pendientes con historia:** renglones con `Prioridad`, como "Enviar liq. a AIG" o "pasar por el cheque", son tareas por hacer. Una tarea necesita responsable, fecha compromiso y estatus (pendiente o hecha); una bitácora solo registra lo que pasó.
+
+**Propuesta (a decidir en el chat de pólizas):**
+
+- **`bitacora`**: comentarios de la gente y eventos automáticos. Una fecha-hora, `id_usuario`, tipo (comentario o automático), texto, y a qué pertenece (por ejemplo, `id_cliente` siempre y `id_poliza` cuando aplica, con llaves foráneas reales), para que la ficha de póliza muestre lo de la póliza, sus recibos y sus endosos.
+- **`tareas`**: pendientes con responsable, fecha compromiso, prioridad y estatus.
+- **Auditoría automática** de cambios (quién, cuándo, campo, valor anterior y nuevo), sobre todo para datos como el ejecutivo de una póliza.
+- **Migración:** traducir cada `ClaveBit` al registro que corresponde (buscándolo en la tabla de su prefijo) y conservar la historia desde 2005.
+- **Por revisar:** si la bitácora de Sicas registra las reasignaciones de ejecutivo. Si lo hace, podría reconstruirse parte del histórico de quién atendió cada póliza.
+
 ## Por confirmar
 
