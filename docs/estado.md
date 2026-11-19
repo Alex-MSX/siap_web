@@ -50,10 +50,16 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 ## Lo que sigue
 
-**Siguiente chat: por decidir.** Opciones naturales:
+**Siguiente chat: "SIAP web · Pólizas".** Diseñar la tabla `polizas` limpia y llevarla a la web por el mismo camino que los clientes (Access → MySQL local → web).
 
-1. **"SIAP web · Primera pantalla con datos reales"**: login con usuarios y permisos, y la pantalla de Clientes leyendo la MySQL de la web (fase 1 del plan: consulta de solo lectura).
-2. **"SIAP web · Pólizas"**: diseñar la tabla `polizas` y llevarlas a la web por el mismo camino que los clientes.
+- **Objetivo de Alex:** limpiar de fondo. La tabla de pólizas de Sicas (que Alex no diseñó) tiene malas prácticas, por ejemplo datos redundantes: guarda `id_ejecutivo` aunque ya tiene `id_cliente`, y `id_aseguradora` aunque ya tiene la clave de agente.
+- **Cómo se trabaja:** revisar columna por columna la tabla de Sicas. De cada una, decidir si se queda, se calcula, se mueve a otra tabla o desaparece. Sicas no se toca: la limpieza vive en el modelo nuevo, y la copia traduce de Sicas al modelo limpio (igual que con clientes).
+- **Primer paso del chat:** Alex comparte la estructura de la tabla de pólizas de Sicas (columnas y tipos) y la pantalla de SIAP donde se capturan.
+- **Preguntas para empezar** (antes de quitar columnas "redundantes"):
+  - `id_ejecutivo`: si se reasigna un cliente, ¿sus pólizas viejas deben mostrar al ejecutivo nuevo o al que las atendió? ¿Puede una póliza tener un ejecutivo distinto al del cliente (por ejemplo, un especialista en GMM)? Si alguna respuesta es sí, no es redundante.
+  - `id_aseguradora`: si cada clave de agente pertenece a una sola aseguradora y nunca cambia, la aseguradora se obtiene de la clave y sobra. Revisar fusiones o cambios de nombre de aseguradoras.
+
+Después de pólizas: **"SIAP web · Primera pantalla con datos reales"** (login con usuarios y permisos, y la pantalla de Clientes leyendo la MySQL de la web).
 
 **Pendientes de seguridad:**
 
