@@ -61,7 +61,7 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 **Siguiente chat: "SIAP web · Pólizas (carga)".** Retomar justo donde quedó el 18/11/2026.
 
 1. **Confirmar la corrección de `OT` en 0** en `Poliza.Copiar_A_MySQL` (0 = sin orden; salía como `OT-0`).
-2. **Revisar la moneda de la póliza 12345** (49-PAP-67138-1, AIG, 2006): llegó en UDIS porque en Sicas tiene `IdMon` = 3. Contar pólizas por moneda en Sicas (`SELECT IdMon, COUNT(*) FROM Polizas GROUP BY IdMon`) para saber si es un error aislado de captura o algo general.
+2. **Revisar la moneda de la póliza de prueba** (IDPoliza 12345, de 2006): llegó en UDIS porque en Sicas tiene `IdMon` = 3. Contar pólizas por moneda en Sicas (`SELECT IdMon, COUNT(*) FROM Polizas GROUP BY IdMon`) para saber si es un error aislado de captura o algo general.
 3. **Crear los planes que falten:** sacar de Sicas las parejas `IDRamo` + `Cia` que usan las pólizas y dar de alta en `planes` las que no existan.
 4. **Carga completa** con `Poliza.Sincronizar_Todas()` (antes, probarlo en `siap_prueba`: SIAP en modo prueba hoy apunta a `siap`, revisar la conexión de `db`).
 5. **Reporte de huérfanos, limpieza y llaves definitivas** (ver `docs/base-de-datos.md`, "Llaves pendientes"). Obligatorio antes de la web.
@@ -85,7 +85,7 @@ Después de pólizas: **"SIAP web · Primera pantalla con datos reales"** (login
 
 **Preguntas abiertas de diseño:** ver la sección "Por confirmar" de `docs/decisiones.md` y de `docs/base-de-datos.md`.
 
-**Módulos por diseñar después:** pólizas (tabla), recibos y cobranza, endosos, órdenes, conciliación, siniestros, CATs y el portal de clientes.
+**Módulos por diseñar después:** recibos y cobranza, endosos, órdenes, conciliación, siniestros, CATs y el portal de clientes.
 
 ## Reglas que no cambian
 
