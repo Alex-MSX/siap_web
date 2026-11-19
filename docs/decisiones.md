@@ -44,6 +44,22 @@
 - **Riesgo aceptado (por ahora):** los usuarios del servidor son administradores y pueden leer la configuración del programa. Pendiente quitarles ese permiso.
 - **Ejecutivos:** se quitó la columna `whatsapp` de `ejecutivos` (en las dos bases) y `puesto` queda "EJECUTIVO DE CUENTA". Los 8 ejecutivos se cargaron en la web con los mismos IDs que la local.
 
+### Pólizas (18/11/2026)
+
+- **La tabla de pólizas de Sicas no se copia tal cual:** de 169 columnas quedan 33. Lo que no es la póliza en sí (bien asegurado, coberturas, reglas de recibos, trámite, incisos, pasos de renovación) va a su propio módulo.
+- **Nombres de columnas:** `numero`, `id_poliza_anterior`, `id_inicial`, `id_direccion_riesgo`, `id_forma_pago`, `porcentaje_comision`, `motivo_cancelacion`, `fecha_cancelacion`.
+- **Sin columna de póliza posterior:** "renovada" y "tiene renovación" se calculan buscando la póliza que tiene a esta como anterior. Una sola liga, que no puede contradecirse.
+- **Estatus:** VIGENTE, RENOVADA, CANCELADA, NO RENOVADA, PRORROGADA y SALDADA (estas dos, de vida). Alex decidió guardar RENOVADA aunque se pueda calcular; se acepta el riesgo con una revisión periódica.
+- **Dinero en `decimal(14,4)`:** 4 decimales para los cálculos (decisión de Alex); se redondea a 2 al mostrar o facturar. Nunca `double`.
+- **Domiciliación en la póliza, no en los recibos:** `id_tarjeta` + `domiciliada`, con una regla que impide estar domiciliada sin tarjeta. `cobranza` se calcula: AGENTE, EN PROCESO o DOMICILIADA.
+- **La aseguradora sale de la clave y del plan.** Se guarda también `id_aseguradora` en la póliza, controlada por llaves dobles (clave + aseguradora, plan + aseguradora) para que nunca se contradigan.
+- **Planes por aseguradora (opción A):** un renglón por cada producto de cada aseguradora, aunque el nombre se repita (TRANSPORTE ESPECÍFICO). Un plan por pareja ramo + aseguradora. No hay `id_ramo` en la póliza: sale del plan.
+- **Número de póliza limpio:** sin ceros a la izquierda (`Limpiar_Poliza`). Quien busque por número debe limpiar con la misma regla.
+- **Columnas temporales** `orden_renovacion` y `renovacion_terminada` para el panel de renovaciones, hasta los módulos de órdenes y renovaciones.
+- **Primero cargar, después las llaves:** las llaves (salvo la de clientes) se quitaron para que la carga desde Sicas no rechace pólizas viejas. Medir huérfanos, limpiar y poner las llaves es obligatorio antes de mandar pólizas a la web.
+- **Catálogos:** todos con los IDs de Sicas y con `estatus` en lugar de borrar (las llaves RESTRICT no dejan borrar lo que tiene pólizas). Ramos con `categoria` (pestañas) y `tipo_asegurados` (pestaña de la ficha); fianzas inactivas.
+- **`db.Ejecutar` con `lanzar_error`:** la sincronización anota los errores en su log en lugar de mostrar un `MsgBox`.
+
 ## Agregados al diseño (para validar)
 
 - Franja de resumen del cliente: pólizas vigentes, prima vigente, recibos pendientes y próxima renovación.

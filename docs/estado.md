@@ -2,7 +2,7 @@
 
 Página corta para retomar el proyecto en cualquier chat nuevo. Se actualiza al cerrar cada chat.
 
-**Última actualización:** 18/11/2026
+**Última actualización:** 18/11/2026 (noche, chat de pólizas)
 
 ## Cómo empezar un chat nuevo
 
@@ -40,6 +40,14 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 **Clientes de Access a MySQL local: terminado (18/11/2026).** SIAP copia cada cliente a MySQL local al darlo de alta, al reasignar ejecutivo y al abrir su consulta. La rutina "Sincronizar todos" copió los 4,829 clientes en producción, sin errores. Detalle, mapa de columnas y reglas en `docs/base-de-datos.md`, sección "Sincronización de clientes".
 
+**Pólizas: estructura terminada y copia probada (18/11/2026).** Detalle en `docs/base-de-datos.md`, sección "Pólizas".
+
+- Tabla `polizas` en MySQL local (`siap`, copiada a `siap_prueba`): 33 columnas limpias, contra 169 de Sicas.
+- Catálogos ajustados en MySQL local: `aseguradoras`, `agentes`, `claves`, `ramos` (44, con categoría y tipo de asegurados), `planes`, `monedas`, `formas_pago`, `vendedores`. Todos en `utf8mb4_general_ci` y con los IDs de Sicas.
+- Llaves: por ahora solo la de `clientes`. Las demás se quitaron para no detener la carga y se ponen después de limpiar.
+- `Poliza.Copiar_A_MySQL` y `Poliza.Sincronizar_Todas` en SIAP. Probada la copia con una póliza; falta la carga completa.
+- `db.Ejecutar` ya tiene `lanzar_error` (la sincronización ya no muestra `MsgBox`).
+
 **Clientes de MySQL local a la web: terminado (18/11/2026).** Flujo completo funcionando: Access → MySQL local → MySQL web.
 
 - **API** `public_html/api_web/clientes.php` (código en `api_web/` del repositorio): clave por `Authorization`, secretos en `/home/commxprolomer/siap_config/api_web.php` (fuera de `public_html`), usuario de MySQL `commxprolomer_siap_api` con solo SELECT, INSERT y UPDATE. Probada: 405 sin POST, 403 sin clave, rechazo con motivo, guardado.
@@ -50,15 +58,15 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 ## Lo que sigue
 
-**Siguiente chat: "SIAP web · Pólizas".** Diseñar la tabla `polizas` limpia y llevarla a la web por el mismo camino que los clientes (Access → MySQL local → web).
+**Siguiente chat: "SIAP web · Pólizas (carga)".** Retomar justo donde quedó el 18/11/2026.
 
-- **Objetivo de Alex:** limpiar de fondo. La tabla de pólizas de Sicas (que Alex no diseñó) tiene malas prácticas, por ejemplo datos redundantes: guarda `id_ejecutivo` aunque ya tiene `id_cliente`, y `id_aseguradora` aunque ya tiene la clave de agente.
-- **Cómo se trabaja:** revisar columna por columna la tabla de Sicas. De cada una, decidir si se queda, se calcula, se mueve a otra tabla o desaparece. Sicas no se toca: la limpieza vive en el modelo nuevo, y la copia traduce de Sicas al modelo limpio (igual que con clientes).
-- **Primer paso del chat:** Alex comparte la estructura de la tabla de pólizas de Sicas (columnas y tipos) y la pantalla de SIAP donde se capturan.
-- **Preguntas para empezar** (antes de quitar columnas "redundantes"):
-  - `id_ejecutivo`: **Alex confirmó (18/11/2026) que hoy falta el histórico de quién atendió cada póliza en su momento**, así que el ejecutivo por póliza **no es redundante**: se queda como historia. Por revisar: si al reasignar un cliente Sicas o SIAP sobrescriben el ejecutivo de sus pólizas (en ese caso, lo migrado de Sicas no es confiable como histórico y el registro confiable empieza con el modelo nuevo), y si una póliza puede tener un ejecutivo distinto al del cliente (por ejemplo, un especialista en GMM).
-  - **Bitácora:** modelo nuevo acordado en principio (polimórfico, con vínculos y nivel); ver `docs/base-de-datos.md`, "Bitácora nueva". Complementa, no sustituye, los datos que deben ser columna (por ejemplo, el ejecutivo de cada póliza).
-  - `id_aseguradora`: si cada clave de agente pertenece a una sola aseguradora y nunca cambia, la aseguradora se obtiene de la clave y sobra. Revisar fusiones o cambios de nombre de aseguradoras.
+1. **Confirmar la corrección de `OT` en 0** en `Poliza.Copiar_A_MySQL` (0 = sin orden; salía como `OT-0`).
+2. **Revisar la moneda de la póliza 12345** (49-PAP-67138-1, AIG, 2006): llegó en UDIS porque en Sicas tiene `IdMon` = 3. Contar pólizas por moneda en Sicas (`SELECT IdMon, COUNT(*) FROM Polizas GROUP BY IdMon`) para saber si es un error aislado de captura o algo general.
+3. **Crear los planes que falten:** sacar de Sicas las parejas `IDRamo` + `Cia` que usan las pólizas y dar de alta en `planes` las que no existan.
+4. **Carga completa** con `Poliza.Sincronizar_Todas()` (antes, probarlo en `siap_prueba`: SIAP en modo prueba hoy apunta a `siap`, revisar la conexión de `db`).
+5. **Reporte de huérfanos, limpieza y llaves definitivas** (ver `docs/base-de-datos.md`, "Llaves pendientes"). Obligatorio antes de la web.
+6. Llamar a `Poliza.Copiar_A_MySQL` desde los puntos de SIAP que cambian pólizas (captura, cancelar, no renovar, domiciliar...) y al abrir la consulta de una póliza, como con clientes.
+7. Crear `polizas` y sus catálogos en la web (antes, revisar en phpMyAdmin si ya existe una tabla `polizas` de la API vieja `sync_poliza.php`), la API `api_web/polizas.php` y ampliar el programa de envío.
 
 Después de pólizas: **"SIAP web · Primera pantalla con datos reales"** (login con usuarios y permisos, y la pantalla de Clientes leyendo la MySQL de la web).
 
@@ -67,8 +75,9 @@ Después de pólizas: **"SIAP web · Primera pantalla con datos reales"** (login
 - Cambiar la clave de la API de pólizas (`public_html/api`) y la contraseña del usuario de MySQL que quedaron expuestas en un chat anterior.
 - Los compañeros que entran por escritorio remoto al servidor son administradores de Windows, así que pueden leer `C:\SIAP_Sync\config.json` (y la configuración de SIAP). Quitarles el permiso de administrador en ese servidor; para usar SIAP no lo necesitan. Se aceptó el riesgo por ahora: la contraseña de `siap_sync` solo lee clientes y la clave de la API no puede borrar nada.
 - Confirmar si la base `commxprolomer_siap` la comparten la API de pólizas y n8n (probablemente sí). Si es así, el usuario de la API de clientes también podría escribir en esas tablas.
+- La contraseña de Sicas (Access) está escrita en el código del módulo `Sicas` de SIAP. Ese archivo nunca debe subirse al repositorio, y cualquiera con el `.exe` puede sacarla descompilándolo. Riesgo bajo, anotado.
 
-**Pendientes chicos de SIAP:** que `db.Ejecutar` no muestre `MsgBox` en la sincronización. Guardar `Sexo` como 1 (no 255).
+**Pendientes chicos de SIAP:** guardar `Sexo` como 1 (no 255). `Poliza.Guardar()` toma el vendedor del cliente (debe ser el de la póliza). `Limpiar_Poliza`: se propuso una versión corregida (su `Regex.Replace` final no guardaba el resultado e `IsNumeric`/`Val` convierten partes como `12E3` en 12000); confirmar si Alex la aplicó. El `Cliente.Copiar_A_MySQL` que Alex compartió no llena `fecha_creacion` desde `FechaCap` ni traduce `id_usuario`, aunque este documento dice que sí: revisar qué versión está en producción. La tabla `ejecutivos` de `siap` tiene `celular` y no `puesto`/`telefono`, y sigue en `utf8mb4_0900_ai_ci`, distinto de lo documentado en `docs/base-de-datos.md`: revisar.
 
 **Ejecutivos:** se dan de alta a mano **en las dos bases** (local y web) con el mismo ID cuando entra alguien nuevo. Si un cliente llega a la web con un ejecutivo que no existe allá, la API lo rechaza ("el ejecutivo N no existe en la web") y queda en el log. Más adelante, sincronizarlos como a los clientes.
 
