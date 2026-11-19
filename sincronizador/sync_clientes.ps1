@@ -1,4 +1,4 @@
-<#
+﻿<#
   SIAP web · Envío de clientes a la nube
 
   Toma de MySQL local los clientes modificados desde el último envío y los
