@@ -227,13 +227,42 @@ Una sola operación, en **transacción** (se aplica todo o nada):
 6. **`ClaveBitRel`** liga, por ejemplo, el renglón de un recibo con el de su póliza. Esa relación ya existe en los datos (el recibo pertenece a la póliza).
 7. **Mezcla pendientes con historia:** renglones con `Prioridad`, como "Enviar liq. a AIG" o "pasar por el cheque", son tareas por hacer. Una tarea necesita responsable, fecha compromiso y estatus (pendiente o hecha); una bitácora solo registra lo que pasó.
 
-**Propuesta (a decidir en el chat de pólizas):**
+## Bitácora nueva (modelo acordado en principio, 18/11/2026)
 
-- **`bitacora`**: comentarios de la gente y eventos automáticos. Una fecha-hora, `id_usuario`, tipo (comentario o automático), texto, y a qué pertenece (por ejemplo, `id_cliente` siempre y `id_poliza` cuando aplica, con llaves foráneas reales), para que la ficha de póliza muestre lo de la póliza, sus recibos y sus endosos.
-- **`tareas`**: pendientes con responsable, fecha compromiso, prioridad y estatus.
-- **Auditoría automática** de cambios (quién, cuándo, campo, valor anterior y nuevo), sobre todo para datos como el ejecutivo de una póliza.
-- **Migración:** traducir cada `ClaveBit` al registro que corresponde (buscándolo en la tabla de su prefijo) y conservar la historia desde 2005.
-- **Por revisar:** si la bitácora de Sicas registra las reasignaciones de ejecutivo. Si lo hace, podría reconstruirse parte del histórico de quién atendió cada póliza.
+Alex quiere la bitácora **ligada al ID del objeto, no a un campo inventado**, y que agregar un objeto nuevo (asegurado, siniestro, reclamación...) **no obligue a cambiar la tabla**. Modelo: **asociación polimórfica con vínculos y nivel.** Se implementa cuando se llegue a ese módulo.
+
+**Tablas**
+
+| Tabla | Para qué |
+|---|---|
+| `bitacora` | El evento: fecha y hora (una sola columna), `id_usuario` (vacío = el sistema), origen (web, SIAP, n8n, bot), categoría, tipo de evento, texto y datos estructurados (JSON) |
+| `bitacora_vinculos` | A qué objetos pertenece el evento: `id_bitacora`, `tipo_objeto`, `id_objeto`, `nivel`. Un renglón por objeto |
+| `tipos_objeto` | Catálogo de tipos válidos (`cliente`, `poliza`, `recibo`, `endoso`, `asegurado`, `siniestro`, `reclamacion`...). `bitacora_vinculos.tipo_objeto` tiene llave foránea aquí |
+| `bitacora_adjuntos` | Archivos de cada renglón (correo, captura, PDF). Los archivos viven en el servidor, no en la base |
+| `tareas` | Pendientes (responsable, fecha compromiso, prioridad, estatus). Crear o terminar una tarea genera un evento en la bitácora |
+
+**Categorías:** *comentario* (lo escribe una persona), *evento* (pasó algo del negocio: recibo cobrado, póliza renovada, correo enviado) y *cambio* (alguien modificó un dato importante: campo, valor anterior, valor nuevo). Los eventos y cambios guardan **el dato** (tipo de evento + JSON); la frase se arma al mostrarla. El dato oficial sigue viviendo en su tabla (por ejemplo, el recibo); la bitácora cuenta la historia.
+
+**Nivel (el "alcance" de cada vínculo):** 0 = le pasó a ese objeto; 1 = le pasó a un hijo; 2 = a un nieto. Ejemplos:
+
+| Evento | Vínculos (tipo, id, nivel) |
+|---|---|
+| Se creó la póliza 4215 | (poliza, 4215, 0), (cliente, 2550, 0). Crear un hijo es nivel 0 también para el padre |
+| Se cobró el recibo 25536 | (recibo, 25536, 0), (poliza, 4215, 1), (cliente, 2550, 2) |
+
+- La ficha del cliente muestra por omisión **solo nivel 0** ("Se creó la póliza 4215", como enlace que abre la bitácora de la póliza). La ficha de póliza muestra **hasta nivel 1** (incluye el cobro del recibo). Un interruptor "Ver todo" muestra todos los niveles con una etiqueta de dónde pasó ("en póliza 4215"). Cuántos niveles muestra cada pantalla se ajusta sin tocar la base.
+- **Una sola función escribe en la bitácora.** Sabe de quién es hijo cada objeto (recibo → póliza → cliente; siniestro → póliza; reclamación → siniestro), revisa que el objeto exista y crea sola los vínculos hacia arriba con su nivel. Un objeto nuevo = un tipo en el catálogo + decirle a la función quién es su padre.
+
+**Costo aceptado:** `id_objeto` no puede tener llave foránea (apunta a tablas distintas). Se mitiga con la función única, el catálogo de tipos, que en el sistema casi nada se borra (se cancela o se inactiva) y una consulta periódica que busca vínculos a objetos inexistentes.
+
+**Se descartó:** una columna de ID por objeto (`id_cliente`, `id_poliza`, ...) en la bitácora, porque cada objeto nuevo sería una columna más.
+
+**Por decidir:**
+
+1. Que nadie pueda editar ni borrar renglones (correcciones como renglón nuevo; el usuario de MySQL de la aplicación solo con INSERT en `bitacora`). Recomendado.
+2. Marca de "visible para el cliente" para el futuro portal de clientes (por ejemplo, "su póliza fue renovada" sí; comentarios internos nunca). Recomendado agregarla desde el principio.
+
+**Migración desde Sicas:** traducir cada `ClaveBit` al objeto que corresponde (buscándolo en la tabla de su prefijo), crear sus vínculos y conservar la historia desde 2005. Revisar si la bitácora de Sicas registra las reasignaciones de ejecutivo: si lo hace, podría reconstruirse parte del histórico de quién atendió cada póliza.
 
 ## Por confirmar
 
