@@ -2,7 +2,7 @@
   "mysql_dll": "C:\\Program Files (x86)\\Prolomer\\Setup_SIAP\\MySql.Data.dll",
   "mysql_servidor": "localhost",
   "mysql_puerto": 3306,
-  "mysql_base": "NOMBRE_DE_LA_BASE_LOCAL",
+  "mysql_base": "siap",
   "mysql_usuario": "siap_sync",
   "mysql_contrasena": "CONTRASEÑA_DEL_USUARIO_siap_sync",
   "api_url": "https://prolomer.com.mx/api_web/clientes.php",
