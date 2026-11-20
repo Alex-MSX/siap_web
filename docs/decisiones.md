@@ -60,6 +60,14 @@
 - **Catálogos:** todos con los IDs de Sicas y con `estatus` en lugar de borrar (las llaves RESTRICT no dejan borrar lo que tiene pólizas). Ramos con `categoria` (pestañas) y `tipo_asegurados` (pestaña de la ficha); fianzas inactivas.
 - **`db.Ejecutar` con `lanzar_error`:** la sincronización anota los errores en su log en lugar de mostrar un `MsgBox`.
 
+### Catálogos y direcciones (19/11/2026)
+
+- **Catálogos con caché en memoria** (módulo `Catalogos`): las tablas chicas se leen una vez por sesión de SIAP. Quien cambia una tabla, refresca el caché.
+- **Direcciones compartidas:** se conserva el diseño de Alex (`direcciones` + `direcciones_detalle`), porque muchos asegurados comparten dirección. Al editar una compartida se elige entre corregir para todos o solo para ese cliente.
+- **MySQL manda en direcciones;** Sicas solo recibe el renglón nuevo para que las pólizas capturadas en Sicas tengan `IDD`. No se mantienen sincronizados en Sicas tipo, fiscal ni correcciones.
+- **Llave única de direcciones con código postal,** y nunca sobrescribir una dirección existente al registrar otra igual.
+- **Llaves foráneas de direcciones, después** (igual que las de pólizas).
+
 ## Agregados al diseño (para validar)
 
 - Franja de resumen del cliente: pólizas vigentes, prima vigente, recibos pendientes y próxima renovación.

@@ -124,9 +124,24 @@ Estructura igual en las dos bases (18/11/2026): `id_ejecutivo` (PK), `nombre`, `
 - **`id_grupo` → `grupos`:** agrupa clientes para el portal de clientes (como SIAP_ATP). El acceso se da con `usuarios_portal.id_grupo` → `grupos`: el usuario apunta al grupo, para que un grupo pueda tener varios usuarios (por ejemplo, director y administración de la misma empresa), todos viendo las pólizas del grupo.
 - Los usuarios del portal (clientes) van separados de los usuarios internos de Prolomer, o al menos distinguidos por rol, para que un cliente nunca vea pantallas internas.
 
-### Tabla `direcciones`
+### Tablas `direcciones` y `direcciones_detalle` (actualizado 19/11/2026)
 
-Todas las direcciones son del cliente (`id_cliente`). Pólizas y perfiles fiscales solo apuntan a ellas, para que una corrección (por ejemplo, el código postal) se refleje en todos lados.
+**MySQL manda en direcciones.** Sicas solo recibe un renglón cuando en MySQL se liga una dirección a un cliente (mientras SIAP capture pólizas en Sicas, cada póliza necesita un `IDD`). Sicas ya no se actualiza: si el tipo, el fiscal o el texto no coinciden con MySQL, no importa. Nada en SIAP debe leer los datos de la dirección desde Sicas.
+
+- **`direcciones`**: la dirección física, una sola vez aunque la compartan muchos clientes (en Sicas una misma dirección llegaba a repetirse 67 veces). Columnas: `id_direccion`, `calle`, `exterior`, `interior`, `colonia`, `poblacion`, `estado`, `codigo_postal`. Llave única `uq_direcciones (calle, exterior, interior, codigo_postal)`. **Antes la llave no incluía el CP** y `Registrar` hacía `ON DUPLICATE KEY UPDATE` de colonia, ciudad y CP: una misma calle y número en otra ciudad sobrescribía la dirección existente de todos sus clientes. Ahora, si ya existe, solo se toma su ID (`ON DUPLICATE KEY UPDATE id_direccion = LAST_INSERT_ID(id_direccion)`). Se quitó la columna `revision`.
+- **`direcciones_detalle`**: la relación cliente-dirección. Columnas: `id`, `id_direccion`, `id_cliente`, `es_envio`, `es_fiscal`, y las generadas `envio_de` y `fiscal_de` con llave única: **un cliente no puede tener dos direcciones de envío ni dos fiscales**. Solo clientes (se quitaron `tabla_referencia` y `estatus`). Quitarle una dirección a un cliente = borrar su renglón; la dirección física sigue existiendo y las pólizas que la usaron la conservan.
+- **Llaves foráneas pendientes** (decisión de Alex: después): `id_direccion → direcciones`, `id_cliente → clientes`.
+- **Al editar una dirección compartida**, el formulario avisa a cuántos clientes afecta: "corregir para todos" (un CP mal capturado) o "solo este cliente" (mudanza: el cliente pasa a una dirección propia).
+- Cuando exista `perfiles_fiscales`, la dirección fiscal se moverá ahí (`perfiles_fiscales.id_direccion`); por ahora es la marca `es_fiscal`.
+
+**Clase `Direccion` de SIAP (reescrita el 19/11/2026):**
+
+- El constructor conserva sus parámetros (`iddireccion`, `idcliente`, `id_direccion_siap`) para no romper los ~20 lugares donde se usa. Si solo llega el `IDD` de Sicas, lee de Sicas únicamente a qué `id_direccion` corresponde y carga todo de MySQL. Con el tiempo, cada formulario se cambia para usar el ID de MySQL directo.
+- `Direccion.Filtrar(id_cliente)`, `Registrar(id_cliente, solo_este_cliente)`, `Esconder`, `Definir_Envio`, `Definir_Fiscal`, `Contar_Direcciones`, `Clientes_Que_Comparten`.
+- `Asegurar_En_Sicas` es el único método que escribe en Sicas: crea el renglón de la pareja cliente + dirección si no existe y regresa su `IDD`.
+- `Direccion.Sincronizar_Todas()`: **carga inicial, se corre una sola vez** (una segunda corrida volvería a ligar direcciones que se le quitaron a un cliente en MySQL). Por cada renglón de Sicas: crea o reutiliza la dirección física, escribe su `id_direccion` en Sicas (así se traducen los `IDD` de las pólizas) y liga al cliente solo las visibles (`Estatus = False`), con sus marcas de envío y fiscal. Log en `logs\sync_direcciones.log`. **Todavía no se corre**: probar primero contra las copias, porque escribe en Sicas.
+- Errores corregidos: `Limpiar_Calle` perdía las mayúsculas (borraba letras capturadas en minúsculas); el constructor por ID de MySQL leía mal tipo y fiscal; `Registrar` usaba dos clientes distintos y fallaba en silencio si la búsqueda aproximada encontraba dos direcciones. Se quitó `Obtener_ID_Direccion`.
+- Por revisar: `Form_Registrar_Emision` línea 224 (`New Direccion(id_direccion)`: si es ID de MySQL debe ser `New Direccion(0, 0, id_direccion)`); `Obtener_Direccion_Fiscal` (seguramente lee de Sicas); formularios que lean la tabla `Direcciones` de Sicas directamente.
 
 ### Tabla `perfiles_fiscales` (nueva)
 
@@ -252,7 +267,7 @@ En la clase `Poliza` de SIAP (mismo patrón que clientes):
 | `id_poliza_anterior` | `Anterior` | `LEFT JOIN` en Access: el `IDPoliza` de la póliza con ese número. NULL si no hay |
 | `id_inicial` | `IDInicial` | Igual; 0 o vacío → el propio `IDPoliza` |
 | `id_cliente` | `IDCli` | Igual |
-| `id_direccion_riesgo` | `IDD` | 0 → NULL |
+| `id_direccion_riesgo` | `IDD` | **Corregir antes de la carga:** `IDD` es el ID del renglón de Sicas, no el de MySQL. Traducir con `Direcciones.id_direccion` de Sicas (LEFT JOIN por `IDD`). 0 o sin traducción → NULL |
 | `orden` | `OT` | `"OT-" & OT`; vacío o 0 → NULL (Sicas guarda la OT sin prefijo) |
 | `orden_renovacion` | `Posterior` / `OTRenov` | `Posterior` si empieza con `OT-` (ahí guarda SIAP la OT de renovación); si no, `OTRenov` |
 | `clave` | `Agente` | Sin espacios sobrantes |
@@ -270,6 +285,18 @@ En la clase `Poliza` de SIAP (mismo patrón que clientes):
 | `motivo_cancelacion`, `fecha_cancelacion` | `Motivo`, `FechaBaja` | Vacío → NULL |
 | `renovacion_terminada` | `Renovacion` | Igual |
 | `fecha_creacion` | `FechaCaptura` | Solo al crear; vacío → fecha actual |
+
+### Clases de catálogos con caché en SIAP (19/11/2026)
+
+Módulo `Catalogos` con `Obtener(sql)` y `Refrescar()`: la primera vez lee la tabla de MySQL y la guarda en memoria (la consulta es la etiqueta); después la regresa de memoria, siempre como copia. Cada sesión de SIAP tiene su caché; un catálogo nuevo se ve al reiniciar SIAP o tras `Catalogos.Refrescar()`. Regla: **quien cambia la tabla, refresca** (`Vendedor.Guardar`, `Plan.Guardar`).
+
+Clases que ya leen de MySQL con caché: `Moneda`, `Ramo`, `Forma_Pago` (antes `Pago`), `Aseguradora`, `Vendedor`, `Plan`, `Agente` (cada objeto es una clave con su agente) y `Ejecutivo` (propuesta). Cada una tiene `todas`/`todos` (`Shared`), su constructor que filtra en memoria y, según el caso, `activos`/`activas`, `Filtrar(...)` (`Ramo.Filtrar(id_aseguradora)`, `Plan.Filtrar(id_aseguradora, id_ramo)`, `Agente.Filtrar(id_aseguradora)`) y `Plan.Buscar(id_aseguradora, id_ramo)`. Conservan los nombres de propiedades que SIAP ya usaba.
+
+- `Plan`: en un plan existente solo cambian nombre y estatus (cambiarle aseguradora o ramo alteraría la historia de sus pólizas). Su constructor anterior tenía la condición al revés y nunca cargaba.
+- `Aseguradora`: necesita `aseguradoras.sufijo_liquidacion` (de `SufijoLiq` de Sicas), que se usa en los folios de Cobranza y Conciliación. Copiar desde Sicas antes de usar la clase.
+- `Ejecutivo`: antes de pasarla a MySQL, convertir la collation de `ejecutivos`, agregar `firma` (de `Footer`) y `estatus`, y dar de alta a los ejecutivos antiguos de Sicas como inactivos (también en la web antes de mandar pólizas).
+- `Vendedor` da de alta vendedores directo en MySQL: para vendedores, MySQL ya manda (confirmar que nadie los crea en Sicas).
+- `Ramo.tipo` ahora puede ser `OTROS` y algunos ramos cambiaron de tipo: revisar dónde se usa `ramo.tipo`.
 
 ### Tabla `Polizas` de Sicas: lo que se encontró
 

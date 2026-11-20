@@ -2,7 +2,7 @@
 
 Página corta para retomar el proyecto en cualquier chat nuevo. Se actualiza al cerrar cada chat.
 
-**Última actualización:** 18/11/2026 (noche, chat de pólizas)
+**Última actualización:** 19/11/2026 (chat de pólizas: catálogos con caché y direcciones)
 
 ## Cómo empezar un chat nuevo
 
@@ -60,6 +60,7 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 **Siguiente chat: "SIAP web · Pólizas (carga)".** Retomar justo donde quedó el 18/11/2026.
 
+0. **Direcciones (19/11/2026):** tablas ajustadas y clase `Direccion` reescrita (MySQL manda). Pendiente: hacer que SIAP en modo prueba apunte a `siap_prueba` y a la copia de Sicas, correr `Direccion.Sincronizar_Todas()` contra las copias, revisarla y luego en producción. Después, corregir en `Poliza.Copiar_A_MySQL` la traducción de `IDD` a `id_direccion` (ver `docs/base-de-datos.md`). Revisar formularios que lean direcciones de Sicas.
 1. **Confirmar la corrección de `OT` en 0** en `Poliza.Copiar_A_MySQL` (0 = sin orden; salía como `OT-0`).
 2. **Revisar la moneda de la póliza de prueba** (IDPoliza 12345, de 2006): llegó en UDIS porque en Sicas tiene `IdMon` = 3. Contar pólizas por moneda en Sicas (`SELECT IdMon, COUNT(*) FROM Polizas GROUP BY IdMon`) para saber si es un error aislado de captura o algo general.
 3. **Crear los planes que falten:** sacar de Sicas las parejas `IDRamo` + `Cia` que usan las pólizas y dar de alta en `planes` las que no existan.
