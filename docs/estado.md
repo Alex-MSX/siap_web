@@ -94,5 +94,5 @@ Después de pólizas: **"SIAP web · Primera pantalla con datos reales"** (login
 - Nombres de personas: nombre, paterno, materno.
 - El vendedor es de cada póliza, no del cliente.
 - No guardar lo que se puede calcular.
-- Mientras exista Sicas, Access manda. MySQL local y la web reciben copias con el mismo ID.
+- Mientras exista Sicas, Access manda. MySQL local y la web reciben copias con el mismo ID. Excepciones, donde ya manda MySQL: direcciones (Sicas solo recibe el renglón nuevo) y vendedores.
 - Ninguna puerta de la oficina se abre hacia internet: los envíos salen del servidor hacia la web.
