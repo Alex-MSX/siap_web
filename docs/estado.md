@@ -2,7 +2,7 @@
 
 Página corta para retomar el proyecto en cualquier chat nuevo. Se actualiza al cerrar cada chat.
 
-**Última actualización:** 19/11/2026 (chat de pólizas: catálogos con caché y direcciones)
+**Última actualización:** 20/11/2026 (chat de pólizas: direcciones completadas desde Sicas)
 
 ## Cómo empezar un chat nuevo
 
@@ -58,9 +58,17 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 ## Lo que sigue
 
-**Siguiente chat: "SIAP web · Pólizas (carga)".** Retomar justo donde quedó el 18/11/2026.
+**Siguiente chat: "SIAP web · Revisión de direcciones".** Alex explicará al inicio cómo quiere revisarlas. Estado al 20/11/2026:
 
-0. **Direcciones (19/11/2026):** tablas ajustadas y clase `Direccion` reescrita (MySQL manda). Pendiente: hacer que SIAP en modo prueba apunte a `siap_prueba` y a la copia de Sicas, correr `Direccion.Sincronizar_Todas()` contra las copias, revisarla y luego en producción. Después, corregir en `Poliza.Copiar_A_MySQL` la traducción de `IDD` a `id_direccion` (ver `docs/base-de-datos.md`). Revisar formularios que lean direcciones de Sicas.
+- **Direcciones en MySQL:** las 6,339 de Sicas ya existen y cada renglón de Sicas tiene su `id_direccion` (0 sin mapear). `direcciones_detalle`: 6,119 relaciones de 4,590 clientes (Sicas tiene 6,181 visibles con cliente; la diferencia serían direcciones repetidas del mismo cliente).
+- **Se corrió `Direccion.Completar_Desde_Sicas()`** (solo lee Sicas): 6,181 revisadas, 0 errores, **4,017 marcas de envío y 424 fiscales**. No se corrió la carga completa (`Sincronizar_Todas`): no hacía falta.
+- **283 renglones de Sicas con CP distinto** al de la dirección de MySQL a la que apuntan (efecto de la llave vieja sin CP). **264 no los usa ninguna póliza vigente**: Alex decidió dejarlos como están en MySQL. **19 sí están en pólizas vigentes** (IDD de Sicas: 764, 5162, 7791, 8527, 8596, 8774, 9805, 10010, 10164, 10174, 10335, 10412, 10456, 10512, 10598, 10633, 10652, 10723, 10795): pendiente decidir en el chat de revisión. Unos 5 son CP casi iguales (un dígito); los otros 14 apuntan a una dirección de otra ciudad (por ejemplo, las direcciones 3311 y 1555 de MySQL juntaron clientes de varios estados).
+- **Envío duplicado:** unos 150 clientes (casi todos recientes) tenían dos direcciones marcadas de envío en Sicas, porque el `Registrar` viejo marcaba la nueva sin desmarcar la anterior. La marca quedó en la **más vieja** (se recorrió por IDD ascendente); lo lógico sería la más nueva. Pendiente decidir en el chat de revisión.
+- Se propuso (no aplicado) `Normalizar_CP` (CP a 5 dígitos: `3100` → `03100`) en `Parametros_Direccion`, y una rutina `Corregir_Desde_Sicas`; quedan como opciones para la revisión.
+- Recordatorios: corregir en `Poliza.Copiar_A_MySQL` la traducción de `IDD` a `id_direccion`; revisar formularios que lean direcciones de Sicas (buscar `FROM Direcciones`, `Obtener_Direccion_Fiscal`, `IDD`); revisar `Form_Registrar_Emision` línea 224.
+
+Después de direcciones, retomar pólizas:
+
 1. **Confirmar la corrección de `OT` en 0** en `Poliza.Copiar_A_MySQL` (0 = sin orden; salía como `OT-0`).
 2. **Revisar la moneda de la póliza de prueba** (IDPoliza 12345, de 2006): llegó en UDIS porque en Sicas tiene `IdMon` = 3. Contar pólizas por moneda en Sicas (`SELECT IdMon, COUNT(*) FROM Polizas GROUP BY IdMon`) para saber si es un error aislado de captura o algo general.
 3. **Crear los planes que falten:** sacar de Sicas las parejas `IDRamo` + `Cia` que usan las pólizas y dar de alta en `planes` las que no existan.
