@@ -2,7 +2,7 @@
 
 Página corta para retomar el proyecto en cualquier chat nuevo. Se actualiza al cerrar cada chat.
 
-**Última actualización:** 20/11/2026 (chat de pólizas: direcciones completadas desde Sicas)
+**Última actualización:** 21/11/2026 (chat "Sincronización de pólizas": copia al capturar, limpieza de planes y claves en Sicas, carga completa)
 
 ## Cómo empezar un chat nuevo
 
@@ -40,13 +40,14 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 **Clientes de Access a MySQL local: terminado (18/11/2026).** SIAP copia cada cliente a MySQL local al darlo de alta, al reasignar ejecutivo y al abrir su consulta. La rutina "Sincronizar todos" copió los 4,829 clientes en producción, sin errores. Detalle, mapa de columnas y reglas en `docs/base-de-datos.md`, sección "Sincronización de clientes".
 
-**Pólizas: estructura terminada y copia probada (18/11/2026).** Detalle en `docs/base-de-datos.md`, sección "Pólizas".
+**Pólizas: Sicas limpio y copia a MySQL funcionando (20 y 21/11/2026).** Detalle en `docs/base-de-datos.md`, secciones "Pólizas" y "Limpieza de planes y claves".
 
-- Tabla `polizas` en MySQL local (`siap`, copiada a `siap_prueba`): 33 columnas limpias, contra 169 de Sicas.
-- Catálogos ajustados en MySQL local: `aseguradoras`, `agentes`, `claves`, `ramos` (44, con categoría y tipo de asegurados), `planes`, `monedas`, `formas_pago`, `vendedores`. Todos en `utf8mb4_general_ci` y con los IDs de Sicas.
-- Llaves: por ahora solo la de `clientes`. Las demás se quitaron para no detener la carga y se ponen después de limpiar.
-- `Poliza.Copiar_A_MySQL` y `Poliza.Sincronizar_Todas` en SIAP. Probada la copia con una póliza; falta la carga completa.
-- `db.Ejecutar` ya tiene `lanzar_error` (la sincronización ya no muestra `MsgBox`).
+- Tabla `polizas` en MySQL local (`siap` y `siap_prueba`): 33 columnas limpias, contra 169 de Sicas.
+- `Poliza.Copiar_A_MySQL` corregido: traduce `IDD` al `id_direccion` de MySQL, `Normalizar_OT` (0 = sin orden) y plan solo desde `Cobertura` (sin búsqueda por pareja).
+- **Copia al capturar:** `Poliza.Guardar()` copia a MySQL la póliza nueva y la anterior. Probado en modo prueba. Todavía no está en la versión de SIAP que usan los compañeros.
+- **Planes y claves de Sicas limpios:** las 30,245 pólizas tienen plan válido y clave válida (rutinas con modo reporte y CSV de cambios en `logs` de SIAP).
+- Catálogos: `claves` con PK (`clave`, `id_aseguradora`); `planes` con varios planes por pareja; planes viejos e `SIN ESPECIFICAR` como INACTIVO; GNP GMM reorganizado a Línea Azul + nivel.
+- Carga completa en `siap_prueba` (20/11): 30,245 pólizas, 0 errores, unos 50 minutos. **En producción: lanzada el 21/11/2026 a las 13:33.**
 
 **Clientes de MySQL local a la web: terminado (18/11/2026).** Flujo completo funcionando: Access → MySQL local → MySQL web.
 
@@ -58,41 +59,35 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 ## Lo que sigue
 
-**Siguiente chat: "SIAP web · Revisión de direcciones".** Alex explicará al inicio cómo quiere revisarlas. Estado al 20/11/2026:
+**Siguiente chat: "SIAP web · Pólizas: huérfanos y llaves".** Pasos:
 
-- **Direcciones en MySQL:** las 6,339 de Sicas ya existen y cada renglón de Sicas tiene su `id_direccion` (0 sin mapear). `direcciones_detalle`: 6,119 relaciones de 4,590 clientes (Sicas tiene 6,181 visibles con cliente; la diferencia serían direcciones repetidas del mismo cliente).
-- **Se corrió `Direccion.Completar_Desde_Sicas()`** (solo lee Sicas): 6,181 revisadas, 0 errores, **4,017 marcas de envío y 424 fiscales**. No se corrió la carga completa (`Sincronizar_Todas`): no hacía falta.
-- **283 renglones de Sicas con CP distinto** al de la dirección de MySQL a la que apuntan (efecto de la llave vieja sin CP). **264 no los usa ninguna póliza vigente**: Alex decidió dejarlos como están en MySQL. **19 sí están en pólizas vigentes** (IDD de Sicas: 764, 5162, 7791, 8527, 8596, 8774, 9805, 10010, 10164, 10174, 10335, 10412, 10456, 10512, 10598, 10633, 10652, 10723, 10795): pendiente decidir en el chat de revisión. Unos 5 son CP casi iguales (un dígito); los otros 14 apuntan a una dirección de otra ciudad (por ejemplo, las direcciones 3311 y 1555 de MySQL juntaron clientes de varios estados).
-- **Envío duplicado:** unos 150 clientes (casi todos recientes) tenían dos direcciones marcadas de envío en Sicas, porque el `Registrar` viejo marcaba la nueva sin desmarcar la anterior. La marca quedó en la **más vieja** (se recorrió por IDD ascendente); lo lógico sería la más nueva. Pendiente decidir en el chat de revisión.
-- Se propuso (no aplicado) `Normalizar_CP` (CP a 5 dígitos: `3100` → `03100`) en `Parametros_Direccion`, y una rutina `Corregir_Desde_Sicas`; quedan como opciones para la revisión.
-- Recordatorios: corregir en `Poliza.Copiar_A_MySQL` la traducción de `IDD` a `id_direccion`; revisar formularios que lean direcciones de Sicas (buscar `FROM Direcciones`, `Obtener_Direccion_Fiscal`, `IDD`); revisar `Form_Registrar_Emision` línea 224.
+1. **Confirmar la carga completa en producción** (mensaje de `Sincronizar_Todas` y `logs\sync_polizas.log`).
+2. **Reporte de huérfanos contra `siap`** (la consulta está en el chat del 20/11; se agrega al repositorio). En prueba salió: 13 sin dirección, 1 forma de pago inexistente; planes y claves ya corregidos en Sicas.
+3. **Llaves definitivas** de `polizas` (ver `docs/base-de-datos.md`, "Llaves pendientes"): `(clave, id_aseguradora) → claves`, `(id_plan, id_aseguradora) → planes`, moneda, forma de pago, vendedor, ejecutivo, `CHECK (hasta >= desde)` e `id_plan` obligatorio.
+4. **Llamar a `Copiar_A_MySQL`** desde cancelar, no renovar, domiciliar, eliminar domiciliación, renombrar y `Actualizar_Posterior`, y al abrir la consulta de una póliza. Después, publicar la versión de SIAP con la copia al capturar.
+5. **SIAP:** clase `Agente` buscando clave + aseguradora; `Limpiar_Clave` en la captura; que `db` y `Sicas` no se conecten a nada antes del login (hoy van a producción).
+6. **Web:** crear `polizas` y sus catálogos (antes, revisar en phpMyAdmin la tabla `polizas` de la API vieja `sync_poliza.php`), la API `api_web/polizas.php` y ampliar el programa de envío.
 
-Después de direcciones, retomar pólizas:
+**Pendientes de datos de pólizas (sin prisa):** 312 de GMM, vida y otros cuyo concepto contradice el plan (`correcciones_revisar_gmm_vida_otros.csv`); 161 de GNP en LÍNEA AZUL sin nivel; IDPoliza 29830 y 29833 (HDI, vigentes, mismo número limpio: ¿doble captura?); 38 renovaciones sin anterior y 129 sin `IDInicial` (historia, se dejan).
 
-1. **Confirmar la corrección de `OT` en 0** en `Poliza.Copiar_A_MySQL` (0 = sin orden; salía como `OT-0`).
-2. **Revisar la moneda de la póliza de prueba** (IDPoliza 12345, de 2006): llegó en UDIS porque en Sicas tiene `IdMon` = 3. Contar pólizas por moneda en Sicas (`SELECT IdMon, COUNT(*) FROM Polizas GROUP BY IdMon`) para saber si es un error aislado de captura o algo general.
-3. **Crear los planes que falten:** sacar de Sicas las parejas `IDRamo` + `Cia` que usan las pólizas y dar de alta en `planes` las que no existan.
-4. **Carga completa** con `Poliza.Sincronizar_Todas()` (antes, probarlo en `siap_prueba`: SIAP en modo prueba hoy apunta a `siap`, revisar la conexión de `db`).
-5. **Reporte de huérfanos, limpieza y llaves definitivas** (ver `docs/base-de-datos.md`, "Llaves pendientes"). Obligatorio antes de la web.
-6. Llamar a `Poliza.Copiar_A_MySQL` desde los puntos de SIAP que cambian pólizas (captura, cancelar, no renovar, domiciliar...) y al abrir la consulta de una póliza, como con clientes.
-7. Crear `polizas` y sus catálogos en la web (antes, revisar en phpMyAdmin si ya existe una tabla `polizas` de la API vieja `sync_poliza.php`), la API `api_web/polizas.php` y ampliar el programa de envío.
+**Estatus de catálogos:** decidido calculado (ACTIVO / NUEVO / INACTIVO). Se construye con vistas al llegar a los catálogos en la web.
+
+**Direcciones: revisadas y en pausa (20/11/2026).** Riesgo aceptado: unas 12 a 15 pólizas vigentes y 266 renglones con dirección equivocada, se corrigen en el paso 3 del proceso de renovación. Pendientes en `docs/base-de-datos.md`, "Revisión de direcciones".
 
 Después de pólizas: **"SIAP web · Primera pantalla con datos reales"** (login con usuarios y permisos, y la pantalla de Clientes leyendo la MySQL de la web).
 
 **Pendientes de seguridad:**
 
-- Cambiar la clave de la API de pólizas (`public_html/api`) y la contraseña del usuario de MySQL que quedaron expuestas en un chat anterior.
-- Los compañeros que entran por escritorio remoto al servidor son administradores de Windows, así que pueden leer `C:\SIAP_Sync\config.json` (y la configuración de SIAP). Quitarles el permiso de administrador en ese servidor; para usar SIAP no lo necesitan. Se aceptó el riesgo por ahora: la contraseña de `siap_sync` solo lee clientes y la clave de la API no puede borrar nada.
-- Confirmar si la base `commxprolomer_siap` la comparten la API de pólizas y n8n (probablemente sí). Si es así, el usuario de la API de clientes también podría escribir en esas tablas.
-- La contraseña de Sicas (Access) está escrita en el código del módulo `Sicas` de SIAP. Ese archivo nunca debe subirse al repositorio, y cualquiera con el `.exe` puede sacarla descompilándolo. Riesgo bajo, anotado.
+- Cambiar la clave de la API de pólizas (`public_html/api`) y la contraseña del usuario de MySQL: siguen expuestas (la clave está en texto en la clase `Poliza` de SIAP y volvió a pasar por un chat el 20/11).
+- Los compañeros que entran por escritorio remoto al servidor son administradores de Windows y pueden leer `C:\SIAP_Sync\config.json`. Riesgo aceptado por ahora.
+- Confirmar si la base `commxprolomer_siap` la comparten la API de pólizas y n8n.
+- La contraseña de Sicas está en el código del módulo `Sicas` de SIAP: ese archivo (y la clase `Poliza`, por la clave de la API) nunca deben subirse al repositorio.
 
-**Pendientes chicos de SIAP:** guardar `Sexo` como 1 (no 255). `Poliza.Guardar()` toma el vendedor del cliente (debe ser el de la póliza). `Limpiar_Poliza`: se propuso una versión corregida (su `Regex.Replace` final no guardaba el resultado e `IsNumeric`/`Val` convierten partes como `12E3` en 12000); confirmar si Alex la aplicó. El `Cliente.Copiar_A_MySQL` que Alex compartió no llena `fecha_creacion` desde `FechaCap` ni traduce `id_usuario`, aunque este documento dice que sí: revisar qué versión está en producción. La tabla `ejecutivos` de `siap` tiene `celular` y no `puesto`/`telefono`, y sigue en `utf8mb4_0900_ai_ci`, distinto de lo documentado en `docs/base-de-datos.md`: revisar.
+**Pendientes chicos de SIAP:** guardar `Sexo` como 1 (no 255). `Poliza.Guardar()` toma el vendedor y el ejecutivo del cliente (deben ser los de la póliza). `fecha_creacion` de la póliza sale de la fecha de la OT (`FechaCaptura` de `Ordenes`), no del día de captura: decidir cuál se quiere. Revisar qué versión de `Cliente.Copiar_A_MySQL` está en producción. La tabla `ejecutivos` de `siap` tiene `celular` y no `puesto`/`telefono`, y sigue en `utf8mb4_0900_ai_ci`.
 
-**Ejecutivos:** se dan de alta a mano **en las dos bases** (local y web) con el mismo ID cuando entra alguien nuevo. Si un cliente llega a la web con un ejecutivo que no existe allá, la API lo rechaza ("el ejecutivo N no existe en la web") y queda en el log. Más adelante, sincronizarlos como a los clientes.
+**Ejecutivos:** se dan de alta a mano **en las dos bases** con el mismo ID. Más adelante, sincronizarlos como a los clientes.
 
-**Pendientes de la tabla `clientes`:** calidad del RFC (886 sin RFC, 1,242 con largo raro) y después volverlo obligatorio; `CHECK` de persona física/moral; homologar nombres de índices entre local y web; tabla `usuarios` y llave foránea de `id_usuario`; crear `perfiles_fiscales` y `cliente_documentos`.
-
-**Preguntas abiertas de diseño:** ver la sección "Por confirmar" de `docs/decisiones.md` y de `docs/base-de-datos.md`.
+**Pendientes de la tabla `clientes`:** calidad del RFC (886 sin RFC, 1,242 con largo raro); `CHECK` de persona física/moral; homologar índices; tabla `usuarios`; `perfiles_fiscales` y `cliente_documentos`.
 
 **Módulos por diseñar después:** recibos y cobranza, endosos, órdenes, conciliación, siniestros, CATs y el portal de clientes.
 
@@ -102,5 +97,7 @@ Después de pólizas: **"SIAP web · Primera pantalla con datos reales"** (login
 - Nombres de personas: nombre, paterno, materno.
 - El vendedor es de cada póliza, no del cliente.
 - No guardar lo que se puede calcular.
-- Mientras exista Sicas, Access manda. MySQL local y la web reciben copias con el mismo ID. Excepciones, donde ya manda MySQL: direcciones (Sicas solo recibe el renglón nuevo) y vendedores.
+- Mientras exista Sicas, Access manda en pólizas y clientes: MySQL local y la web reciben copias con el mismo ID. Ya manda MySQL en direcciones (Sicas solo recibe el renglón nuevo), vendedores y asegurados. La meta es que MySQL mande también en pólizas.
+- Cambios masivos en producción: respaldo del `.accdb` antes, rutina con modo reporte primero y CSV de lo que cambió.
+- Una dirección compartida por varios clientes no se edita para corregir a uno solo: ese cliente se pasa a la dirección que le corresponde.
 - Ninguna puerta de la oficina se abre hacia internet: los envíos salen del servidor hacia la web.

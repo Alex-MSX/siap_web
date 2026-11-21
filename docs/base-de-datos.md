@@ -144,6 +144,16 @@ Estructura igual en las dos bases (18/11/2026): `id_ejecutivo` (PK), `nombre`, `
 - Errores corregidos: `Limpiar_Calle` perdía las mayúsculas (borraba letras capturadas en minúsculas); el constructor por ID de MySQL leía mal tipo y fiscal; `Registrar` usaba dos clientes distintos y fallaba en silencio si la búsqueda aproximada encontraba dos direcciones. Se quitó `Obtener_ID_Direccion`.
 - Por revisar: `Form_Registrar_Emision` línea 224 (`New Direccion(id_direccion)`: si es ID de MySQL debe ser `New Direccion(0, 0, id_direccion)`); `Obtener_Direccion_Fiscal` (seguramente lee de Sicas); formularios que lean la tabla `Direcciones` de Sicas directamente.
 
+### Revisión de direcciones (20/11/2026, en pausa)
+
+Alex decidió dejarlas como están y seguir con pólizas.
+
+- **Revisión contra el PDF de cada póliza vigente** (`Direccion.Revisar_CP_Polizas_Vigentes`, solo lectura; PDF en Nextcloud `POLIZAS\{año de Desde}\{IDPoliza}.pdf`). 1,062 pólizas: 959 OK, 77 NO ENCONTRADO (Sicas y MySQL coinciden pero ese CP no está en el PDF), 12 GANA SICAS, 12 SIN TEXTO (PDF de imagen, todos de la aseguradora 3), 1 GANA MYSQL, 1 SIN DIRECCIÓN.
+- **Empate exacto de todo Sicas contra MySQL** (`Revisar_Direcciones`, modo reporte): 6,077 iguales, 0 a corregir, 266 por revisar: renglones cuya dirección no existe en MySQL (perdedores de los choques de la llave vieja sin CP, que el `Registrar` viejo sobrescribió). Siguen apuntando a la dirección de otro cliente.
+- **Ediciones manuales del 20/11** a direcciones compartidas arreglaron a unos clientes y descompusieron a otros. Regla: **no editar una dirección compartida para corregir a un solo cliente**; ese cliente se pasa a la dirección que le corresponde.
+- **Riesgo aceptado:** unas 12 a 15 pólizas vigentes y los 266 renglones quedan con dirección equivocada; se corrigen en el paso 3 del proceso de renovación. Los reportes (`revision_cp_20261120_1335.csv`, `revisar_direcciones_PRUEBA_20261120_1619.csv`, en `logs` de SIAP) son la lista de pendientes.
+- **Pendientes:** los 266; los 77 NO ENCONTRADO (agregar a la revisión los CP que trae el PDF); un renglón sin `id_direccion`; envío duplicado (unos 150 clientes con la marca en la dirección más vieja); `Normalizar_CP` (propuesto); revisar formularios que lean direcciones de Sicas (`FROM Direcciones`, `Obtener_Direccion_Fiscal`).
+
 ### Tabla `perfiles_fiscales` (nueva)
 
 Los datos a los que sale la factura. **Relación 1 a 1 con `clientes`**: cada cliente tiene exactamente un perfil fiscal, garantizado por un índice UNIQUE en `id_cliente`.
@@ -192,16 +202,16 @@ Ya creada en `siap` (y copiada a `siap_prueba`). Falta crearla en la web. Toda e
 | Columna | Tipo | Nota |
 |---|---|---|
 | `id_poliza` | int, PK | El mismo `IDPoliza` de Sicas. Tiene `AUTO_INCREMENT`, pero mientras exista Sicas solo la sincronización inserta y siempre manda el ID |
-| `numero` | varchar(45) | Número de póliza **limpio** con `Limpiar_Poliza` (sin ceros a la izquierda en las partes numéricas: `0000006546654` → `6546654`). Decisión de Alex. Quien busque por número debe limpiar lo que busca con la misma regla |
+| `numero` | varchar(45) | Número de póliza **limpio** con `Limpiar_Poliza` (sin ceros a la izquierda en las partes numéricas: `0000006546654` → `6546654`; una parte que es puro cero, como el endoso `00000`, se quita completa: `01-030-07028156-00000-01` → `1-30-7028156-1`). Decisión de Alex. Sicas guarda los números viejos sin limpiar; al limpiarlos, 14 parejas chocan. Quien busque por número debe limpiar lo que busca con la misma regla |
 | `id_poliza_anterior` | int, NULL | La póliza que esta renueva. "Renovada" y "tiene renovación" se calculan buscando quién la tiene como anterior. **No hay columna de posterior** |
 | `id_inicial` | int | Primera póliza de la cadena (la columna `IDInicial` que Alex agregó en Sicas). Si viene vacía, el propio ID |
 | `id_cliente` | int | Llave foránea a `clientes` (la única llave activa por ahora) |
 | `id_direccion_riesgo` | int, NULL | Sin llave hasta que exista `direcciones` en MySQL |
-| `orden` | varchar(45), NULL | Folio de la OT que la generó, con prefijo `OT-`. Después se liga a `id_orden` |
+| `orden` | varchar(45), NULL | Folio de la OT con la que se creó la póliza (el "cajón" de donde salió), con prefijo `OT-`. Vacío o 0 = sin orden (NULL). Después se liga a `id_orden` |
 | `orden_renovacion` | varchar(45), NULL | **Temporal**, hasta el módulo de órdenes: OT de renovación en trámite |
-| `clave` | varchar(45) | Clave de agente. La aseguradora sale de `claves` |
-| `id_aseguradora` | int | Redundancia **controlada**: cuando se pongan las llaves dobles, tiene que coincidir con la de la clave y la del plan |
-| `id_plan` | int, NULL por ahora | Plan = ramo + aseguradora. El ramo sale del plan (no hay `id_ramo` en pólizas). NULL permitido solo para la carga |
+| `clave` | varchar(45) | Clave de agente. **No es única por sí sola**: la misma clave existe en varias aseguradoras (fusiones, 54211 de AIG y de Alico). Se identifica con `clave` + `id_aseguradora` |
+| `id_aseguradora` | int | **No es redundante** (decisión del 21/11/2026): la clave sola no dice la aseguradora. Llave doble `(clave, id_aseguradora) → claves` y `(id_plan, id_aseguradora) → planes` |
+| `id_plan` | int, NULL por ahora | Plan = producto de una aseguradora en un ramo (hay **varios planes por pareja** ramo + aseguradora). El ramo sale del plan (no hay `id_ramo` en pólizas). Desde el 21/11/2026 todas las pólizas de Sicas tienen un plan válido |
 | `desde`, `hasta` | date | Vigencia |
 | `id_moneda`, `id_forma_pago`, `id_vendedor`, `id_ejecutivo` | int | Sin llave por ahora (ver "Llaves pendientes"). El ejecutivo se queda como historia de quién atendió cada póliza |
 | `concepto` | varchar(255) | Texto vacío si Sicas no trae |
@@ -229,10 +239,10 @@ Pendiente de agregar cuando se llegue a facturación: `requiere_factura` (ver "P
 Decisión del 18/11/2026: **primero cargar, luego medir, limpiar y al final poner las llaves.** Con 20 años de datos de Sicas, muchas pólizas no pasarían las llaves (por ejemplo, ejecutivos que ya no están en `ejecutivos`). Este paso es **obligatorio antes de mandar pólizas a la web**:
 
 1. Reporte de huérfanos: pólizas con ejecutivo, vendedor, clave, plan, moneda o forma de pago que no existen en su catálogo; y pólizas cuya clave y plan son de aseguradoras distintas a `id_aseguradora`.
-2. Corregir (por ejemplo: dar de alta ejecutivos antiguos como inactivos, crear los planes que falten).
+2. Corregir (por ejemplo: dar de alta ejecutivos antiguos como inactivos, crear los planes que falten). **Planes y claves: terminado en Sicas el 21/11/2026** (ver "Limpieza de planes y claves").
 3. Poner las llaves: `fk_polizas_claves (clave, id_aseguradora) → claves`, `fk_polizas_planes (id_plan, id_aseguradora) → planes` (las dos dobles: impiden clave y plan de aseguradoras distintas), `id_moneda → monedas`, `id_forma_pago → formas_pago`, `id_vendedor → vendedores`, `id_ejecutivo → ejecutivos`, `CHECK (hasta >= desde)` y volver `id_plan` obligatorio. Las llaves de `id_tarjeta` e `id_direccion_riesgo` esperan a que existan esas tablas.
 
-Los `UNIQUE (clave, id_aseguradora)` en `claves` y `UNIQUE (id_plan, id_aseguradora)` en `planes`, que necesitan las llaves dobles, ya están creados.
+La PK `(clave, id_aseguradora)` de `claves` y el `UNIQUE (id_plan, id_aseguradora)` de `planes`, que necesitan las llaves dobles, ya están creados.
 
 ### Catálogos de pólizas (MySQL local, todos en `utf8mb4_general_ci`)
 
@@ -242,10 +252,10 @@ Todos con los mismos IDs de Sicas. Tienen que existir también en la web, con lo
 |---|---|---|
 | `aseguradoras` | `id_aseguradora`, `aseguradora`, `estatus` (ACTIVA/INACTIVA) | |
 | `agentes` | `id_agente`, `agente`, `estatus` | Un solo campo de nombre (hay agentes que son empresas) |
-| `claves` | `clave` (PK), `id_agente`, `id_aseguradora`, `estatus` (ACTIVA/INACTIVA) | La clave es única: Alex confirma que es casi imposible que se repita entre aseguradoras, y la PK lo garantiza |
+| `claves` | `clave` + `id_aseguradora` (PK), `id_agente`, `estatus` (ACTIVA/INACTIVA) | **PK cambiada el 21/11/2026** (antes solo `clave`): una clave se repite entre aseguradoras por fusiones y por el Sicas viejo (54211 de AIG → `54211V` en Alico). Se quitó `uq_claves_clave_aseguradora` (lo cubre la PK). Altas del 21/11: (54211, Alico), (94096, ABA), (2564, Chubb), (2987, Alico), (2987, Génesis), 788, 92292, 2228 y 18882 |
 | `ramos` | `id_ramo`, `ramo`, `abreviatura` (única), `categoria`, `tipo_asegurados`, `tiene_iva`, `estatus` | 44 ramos, mismos IDs de Sicas. `categoria` (AUTOS, GMM, VIDA, ACCIDENTES, HOGAR, OTROS) = pestañas de Clientes. `tipo_asegurados` (PERSONAS, VEHICULOS, UBICACIONES, OTROS) = qué pestaña muestra la ficha. Fianzas (33 a 36) inactivas: Prolomer no maneja fianzas. No se migró `CamposConcep` de Sicas (receta del concepto con columnas que ya no existen). Todas las pólizas se renuevan, así que no hay columna "renovable" |
-| `planes` | `id_plan`, `id_aseguradora`, `id_ramo`, `plan`, `estatus` | Un plan por pareja ramo + aseguradora (`UNIQUE (id_ramo, id_aseguradora)`). El plan es el producto de esa aseguradora (FLEX PLUS de AXA, LÍNEA AZUL de GNP); los genéricos como TRANSPORTE ESPECÍFICO se repiten una vez por aseguradora (opción A, decidida) |
-| `monedas` | `id_moneda`, `moneda`, `codigo` (único) | 1 PESOS (MXN), 2 DOLARES (USD), 3 UDIS. Mismos IDs de Sicas. Se quitó `tipo_cambio`: el que importa es el de cada recibo |
+| `planes` | `id_plan`, `id_aseguradora`, `id_ramo`, `plan`, `estatus` | **Varios planes por pareja** ramo + aseguradora (AMPLIA, LIMITADA; FLEX PLUS, PLUS 360...): "un plan por pareja" era un supuesto equivocado (corregido el 20/11/2026). `UNIQUE (id_plan, id_aseguradora)` para la llave doble. Los genéricos (TRANSPORTE ESPECÍFICO) se repiten por aseguradora. Planes viejos recuperados de Sicas y `SIN ESPECIFICAR` se crearon INACTIVO. GNP GMM: el plan es familia + nivel (LÍNEA AZUL PREMIER 100/200/300/400, PREMIUM, PLATINO, FLEXIBLE ÍNDIGO; CONEXIÓN LÍNEA AZUL; ALTA ESPECIALIDAD, VÍNCULO MUNDIAL, INTERNACIONAL); el tabulador (Tempus, Novus, Excelsis, Omnia, VIP) **no** es plan |
+| `monedas` | `id_moneda`, `moneda`, `codigo` (único) | **2 DOLARES (USD), 3 PESOS (MXN), 4 UDIS**: los mismos IDs de Sicas (se ajustó tras la primera prueba). Alex quiere cambiar los IDs después: hacerlo en un solo movimiento (catálogo y pólizas) y traducir `IdMon` en la copia mientras exista Sicas. Se quitó `tipo_cambio`: el que importa es el de cada recibo |
 | `formas_pago` | `id_forma_pago`, `forma`, `pagos_por_año` | 1 CONTADO, 2 SEMESTRAL, 4 TRIMESTRAL, 12 MENSUAL; BIMESTRAL sería 6. Antes se llamaba `pagos` |
 | `vendedores` | `id_vendedor`, `vendedor`, `estatus` | Un solo campo de nombre (a veces son despachos) |
 
@@ -256,8 +266,10 @@ En la clase `Poliza` de SIAP (mismo patrón que clientes):
 - `Poliza.Copiar_A_MySQL(id)`: lee la póliza de Access, la traduce y la guarda con `INSERT ... ON DUPLICATE KEY UPDATE`. Regresa True o False. Nunca interrumpe al usuario: los errores van a `logs\sync_polizas.log`.
 - `Poliza.Sincronizar_Todas()`: carga inicial. Antes revisa que `IDPoliza` no venga vacío ni repetido en Sicas (en Sicas la llave es el número de póliza, no `IDPoliza`); si hay, no copia nada y avisa.
 - `db.Ejecutar` tiene un parámetro opcional `lanzar_error` (False por omisión). La sincronización lo usa en True para que el error llegue al log en lugar de mostrar un `MsgBox`. Se aplicó también a `Cliente.Copiar_A_MySQL`.
-- **Probado con una póliza** (IDPoliza 12345, de 2006) el 18/11/2026, en producción (`siap`). Funcionó. Pendientes encontrados: `OT` en 0 salía como `OT-0` (corrección dada: 0 = sin orden; confirmar que se aplicó) y la moneda salió UDIS (revisar si es error de captura en Sicas).
-- Todavía no se corre la carga completa ni se llama a la copia desde los puntos de captura de SIAP.
+- **Probado con una póliza** el 18/11/2026. La moneda "UDIS" de esa prueba era el catálogo viejo; hoy 3 = PESOS en las dos bases.
+- **Copia al capturar (20/11/2026):** al final de `Poliza.Guardar()` se copian a MySQL la póliza nueva y la anterior (que Sicas marca RENOVADA). Probado en modo prueba con una emisión y una sustitución (la anterior queda CANCELADA "Por Sustitución de Documento"). Falta llamarla desde cancelar, no renovar, domiciliar, renombrar y `Actualizar_Posterior`.
+- **Carga completa en prueba (20/11/2026):** 30,245 pólizas, 0 errores, unos 50 minutos. **En producción: corriendo el 21/11/2026**, después de limpiar planes y claves.
+- **Modo prueba:** `db` y `Sicas` cambian a las copias al hacer login. Código que corre antes del login escribe en producción (pendiente: que sin login no se conecten a nada).
 
 **Mapa de columnas**
 
@@ -268,12 +280,12 @@ En la clase `Poliza` de SIAP (mismo patrón que clientes):
 | `id_poliza_anterior` | `Anterior` | `LEFT JOIN` en Access: el `IDPoliza` de la póliza con ese número. NULL si no hay |
 | `id_inicial` | `IDInicial` | Igual; 0 o vacío → el propio `IDPoliza` |
 | `id_cliente` | `IDCli` | Igual |
-| `id_direccion_riesgo` | `IDD` | **Corregir antes de la carga:** `IDD` es el ID del renglón de Sicas, no el de MySQL. Traducir con `Direcciones.id_direccion` de Sicas (LEFT JOIN por `IDD`). 0 o sin traducción → NULL |
-| `orden` | `OT` | `"OT-" & OT`; vacío o 0 → NULL (Sicas guarda la OT sin prefijo) |
-| `orden_renovacion` | `Posterior` / `OTRenov` | `Posterior` si empieza con `OT-` (ahí guarda SIAP la OT de renovación); si no, `OTRenov` |
+| `id_direccion_riesgo` | `IDD` | `LEFT JOIN Direcciones` de Sicas por `IDD` y se toma su `id_direccion` (el de MySQL). 0 o sin traducción → NULL. **Aplicado el 20/11/2026** |
+| `orden` | `OT` | `Normalizar_OT`: vacío, 0 u `OT-0` → NULL; si no trae `OT-`, se le pone |
+| `orden_renovacion` | `Posterior` / `OTRenov` | `Posterior` si empieza con `OT-` (ahí guarda SIAP la OT de renovación); si no, `OTRenov`. Las dos con `Normalizar_OT` |
 | `clave` | `Agente` | Sin espacios sobrantes |
 | `id_aseguradora` | `Cia` | Igual |
-| `id_plan` | `Cobertura` / `IDRamo` + `Cia` | `Cobertura` **es el id_plan** en Sicas (SIAP la reutilizó). Se usa si ese plan existe y es de la misma aseguradora y ramo; si no, se busca el plan de la pareja `IDRamo` + `Cia`; si tampoco existe, NULL (va al reporte de huérfanos) |
+| `id_plan` | `Cobertura` | `Cobertura` **es el id_plan** en Sicas (SIAP la reutilizó). Se usa solo si ese plan existe y es de la misma aseguradora y ramo; si no, NULL (reporte de huérfanos). **Se quitó** la búsqueda por pareja `IDRamo` + `Cia`: con varios planes por pareja fallaba ("Subquery returns more than 1 row") |
 | `desde`, `hasta` | `Desde`, `Hasta` | Solo la fecha. Si falta alguna, la póliza no se copia (log) |
 | `id_moneda`, `id_forma_pago` | `IdMon`, `Pago` | Igual |
 | `id_vendedor`, `id_ejecutivo` | `IDVend`, `IdEjecut` | Igual |
@@ -286,6 +298,24 @@ En la clase `Poliza` de SIAP (mismo patrón que clientes):
 | `motivo_cancelacion`, `fecha_cancelacion` | `Motivo`, `FechaBaja` | Vacío → NULL |
 | `renovacion_terminada` | `Renovacion` | Igual |
 | `fecha_creacion` | `FechaCaptura` | Solo al crear; vacío → fecha actual |
+
+### Limpieza de planes y claves en Sicas (20 y 21/11/2026)
+
+Se hizo en Sicas producción (respaldos del `.accdb` antes de cada etapa). Cada rutina de SIAP tiene modo reporte y deja un CSV en `logs` con el valor anterior de cada póliza (se puede deshacer). Resultado: **las 30,245 pólizas tienen plan válido y clave válida**.
+
+**Planes** (`Cobertura`). Había 4,553 pólizas vacías (0, -1 o nada) y 16,814 con un número que no era plan: antes de SIAP, `Cobertura` apuntaba a 4 tablas viejas de Sicas (`Planes GM`, `Planes Vehiculos`, `Planes Vida`, `Planes Varios`). Orden aplicado:
+
+1. A mano, las 38 vigentes sin plan y las de Alico (con el concepto).
+2. `Poliza.Traducir_Planes_Viejos`: número viejo → nombre en su tabla vieja (misma aseguradora; mismo ramo en Vehículos y Varios; ramo 18/19 en GM; categoría VIDA en Vida) → plan nuevo con ese nombre, con una lista de equivalencias decidida por Alex; si no existe, se crea con el nombre viejo, INACTIVO (159 planes).
+3. `Poliza.Propagar_Planes`: hereda el plan de la póliza más reciente de su cadena (mismo `IDInicial`, aseguradora y ramo).
+4. `Poliza.Asignar_Planes_Por_Omision`: plan fijo por pareja (AIG autos → AMPLIA, AIG empresariales → PyME, AIG hogar → 25, AIG ramo 12 → 283, AMPLIA en autos de 13, 12, 3, 2, 22, 21; AXA camiones → AMPLIA), o el único plan de la pareja, o `SIN ESPECIFICAR` (INACTIVO).
+5. `Poliza.Aplicar_Correcciones_Plan` (lee un CSV `IDPoliza, Plan_nuevo` y valida aseguradora + ramo): GNP GMM a LÍNEA AZUL + nivel (658), AIG autos por concepto (370), otros autos por concepto y autos `SIN ESPECIFICAR` → AMPLIA (203). Los planes de GNP que se juntaron se borraron del catálogo.
+
+Pendiente: 312 pólizas de GMM, vida y otros cuyo concepto contradice el plan (no se aplicó: el concepto ahí es menos confiable); 161 de GNP en LÍNEA AZUL sin nivel; `SIN ESPECIFICAR` que queden.
+
+**Claves** (`Agente`). 531 no existían en el catálogo (ceros adelante según quién capturaba, `" V"`, `54211V`, `2987-1`) y 320 eran de otra aseguradora. Causa principal: en 2019–2022 AIG cerró autos y su cartera pasó a Qualitas, Atlas, Chubb y Zurich; se cambió la aseguradora a mano pero no la clave. Solución: fusiones reales (94096 en ABA, 2564 en Chubb, 2987 en Alico) se dan de alta en `claves`; lo demás se corrige a la clave de Prolomer en la aseguradora correcta (por cadena, por única clave del agente o por decisión de Alex: Chubb 94096, Zurich 76014, GNP 76412). `Poliza.Aplicar_Correcciones_Clave` aplicó 727. En la tabla `Agentes` de Sicas (relación con integridad y cascada hacia `Polizas`) se renombraron `05408`, `092292`, `02228`, `2942 V` y `2844 V` a su forma limpia.
+
+**Hallazgos sin corregir:** 38 pólizas cuyo `Anterior` no encuentra póliza (ninguna vigente); 129 sin `IDInicial`; 14 parejas de números que chocan al limpiarlos (una vigente: IDPoliza 29830 y 29833 de HDI, revisar si es doble captura); 13 sin dirección; 1 forma de pago inexistente.
 
 ### Clases de catálogos con caché en SIAP (19/11/2026)
 
@@ -407,3 +437,6 @@ Alex quiere la bitácora **ligada al ID del objeto, no a un campo inventado**, y
 
 ## Por confirmar
 
+- **Estatus de catálogos (decidido 21/11/2026, por construir):** calculado, no guardado. ACTIVO = tiene pólizas vigentes; NUEVO = nunca ha tenido pólizas; INACTIVO = tuvo pero ya no. Cascada: agente activo si alguna clave lo está. Las listas muestran ACTIVO y NUEVO, con "mostrar inactivos" para escoger cualquiera. `SIN ESPECIFICAR` nunca se ofrece. Con vistas de MySQL; la columna `estatus` se quita cuando SIAP deje de leerla.
+- `Limpiar_Clave` en la captura de SIAP (ceros adelante, espacios), como `Limpiar_Poliza`.
+- Clase `Agente` de SIAP: buscar la clave con su aseguradora (hoy busca solo por el texto).

@@ -21,7 +21,7 @@ Para verlas, descarga el repositorio y abre `prototipo/clientes.html` en el nave
 ## Plan
 
 1. **Consulta de cartera de solo lectura.** Buscar clientes y pólizas y ver recibos, estatus y documentos desde cualquier lugar. No escribe nada, así que no hay riesgo para la operación.
-2. **Sincronización.** Access (Sicas) sigue siendo la fuente de verdad. SIAP copia cada registro a MySQL local con el mismo ID, y un programa en el servidor manda a la MySQL del dominio lo que cambió (APIs en `public_html/api_web`). **Clientes: funcionando de punta a punta** (Access → MySQL local → web, cada 5 minutos).
+2. **Sincronización.** Access (Sicas) sigue siendo la fuente de verdad. SIAP copia cada registro a MySQL local con el mismo ID, y un programa en el servidor manda a la MySQL del dominio lo que cambió (APIs en `public_html/api_web`). **Clientes: funcionando de punta a punta** (Access → MySQL local → web, cada 5 minutos). **Pólizas:** Sicas limpio (planes y claves) y copia a MySQL local al capturar; falta la API de la web.
 3. **Migración módulo por módulo.** Cada proceso que se pase a la web (por ejemplo CATs o conciliación) se empieza a escribir allá. SIAP se va vaciando poco a poco, sin un día de migración que lo arriesgue todo.
 
 Desde la primera versión con datos reales: login con usuarios y permisos, y HTTPS.
@@ -52,6 +52,8 @@ sincronizador/
   sync_clientes.ps1      Programa de envío (va en C:\SIAP_Sync del servidor de la oficina)
   config.ejemplo.json    Configuración de ejemplo, sin contraseñas
   instalar_mysql_local.sql  Tabla sincronizacion y usuario siap_sync de MySQL local
+consultas/
+  huerfanos_polizas.sql  Reporte de huérfanos de pólizas (MySQL local)
 docs/
   estado.md              En qué vamos y qué sigue (leer primero)
   decisiones.md          Decisiones de diseño y supuestos por confirmar

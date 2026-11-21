@@ -54,7 +54,7 @@
 - **Domiciliación en la póliza, no en los recibos:** `id_tarjeta` + `domiciliada`, con una regla que impide estar domiciliada sin tarjeta. `cobranza` se calcula: AGENTE, EN PROCESO o DOMICILIADA.
 - **La aseguradora sale de la clave y del plan.** Se guarda también `id_aseguradora` en la póliza, controlada por llaves dobles (clave + aseguradora, plan + aseguradora) para que nunca se contradigan.
 - **Planes por aseguradora (opción A):** un renglón por cada producto de cada aseguradora, aunque el nombre se repita (TRANSPORTE ESPECÍFICO). Un plan por pareja ramo + aseguradora. No hay `id_ramo` en la póliza: sale del plan.
-- **Número de póliza limpio:** sin ceros a la izquierda (`Limpiar_Poliza`). Quien busque por número debe limpiar con la misma regla.
+- **Número de póliza limpio:** sin ceros a la izquierda (`Limpiar_Poliza`); las partes que son puro cero se quitan (regla original de Alex, restaurada el 20/11/2026). Quien busque por número debe limpiar con la misma regla.
 - **Columnas temporales** `orden_renovacion` y `renovacion_terminada` para el panel de renovaciones, hasta los módulos de órdenes y renovaciones.
 - **Primero cargar, después las llaves:** las llaves (salvo la de clientes) se quitaron para que la carga desde Sicas no rechace pólizas viejas. Medir huérfanos, limpiar y poner las llaves es obligatorio antes de mandar pólizas a la web.
 - **Catálogos:** todos con los IDs de Sicas y con `estatus` en lugar de borrar (las llaves RESTRICT no dejan borrar lo que tiene pólizas). Ramos con `categoria` (pestañas) y `tipo_asegurados` (pestaña de la ficha); fianzas inactivas.
@@ -67,6 +67,18 @@
 - **MySQL manda en direcciones;** Sicas solo recibe el renglón nuevo para que las pólizas capturadas en Sicas tengan `IDD`. No se mantienen sincronizados en Sicas tipo, fiscal ni correcciones.
 - **Llave única de direcciones con código postal,** y nunca sobrescribir una dirección existente al registrar otra igual.
 - **Llaves foráneas de direcciones, después** (igual que las de pólizas).
+
+### Sincronización y limpieza de pólizas (20 y 21/11/2026)
+
+- **Por ahora Sicas sigue guardando la póliza y SIAP la copia a MySQL al capturar.** Alex quiere que MySQL mande también en pólizas (capturar en MySQL y copiar a Sicas), pero primero se migra; si hay cambios en esta etapa se hacen en los dos lados. Asegurados ya viven solo en MySQL (`asegurados` + `asegurados_detalle`, como direcciones). Recibos se migran cuando se defina su tabla.
+- `IDPoliza` en Sicas **es autonumérico** (lo agregó Alex). La documentación anterior decía lo contrario.
+- **`orden`** es la OT con la que se creó la póliza, no la de renovación (esa es `orden_renovacion`).
+- **Planes: varios por pareja aseguradora + ramo.** Se corrigió el supuesto de "un plan por pareja". Los planes históricos se recuperaron de las 4 tablas viejas de Sicas; lo que no se pudo saber quedó con un plan por omisión decidido por Alex o `SIN ESPECIFICAR` (INACTIVO).
+- **GNP GMM:** el plan es familia + nivel hospitalario (Línea Azul Premier 100/200/300/400, Premium, Platino, Flexible Índigo; Conexión Línea Azul; Alta Especialidad, Vínculo Mundial, Internacional se quedan). El tabulador no es plan; si se necesita, irá como dato de la póliza en el módulo de GMM.
+- **En autos gana el concepto** cuando dice claramente la cobertura y ese plan existe. Autos sin plan conocido → AMPLIA de su aseguradora. En GMM y vida el concepto no se aplica (menos confiable).
+- **Claves: una clave es única por aseguradora**, no sola (fusiones y el Sicas viejo, que no dejaba repetir: `54211V`). PK de `claves` = (`clave`, `id_aseguradora`). `id_aseguradora` se queda en la póliza y no es redundante. Las claves que quedaron mal por el cierre de autos de AIG se corrigieron a la clave correcta; las fusiones reales se dieron de alta como inactivas.
+- **Estatus de catálogos calculado** (ACTIVO / NUEVO / INACTIVO, ver `base-de-datos.md`, "Por confirmar"). "Inactivo" solo significa oculto por omisión: se puede mostrar y escoger.
+- **Trabajar sobre producción** con respaldo del `.accdb` antes de cada etapa y rutinas con modo reporte y CSV de lo que cambió.
 
 ## Agregados al diseño (para validar)
 
