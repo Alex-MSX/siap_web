@@ -47,7 +47,9 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 - **Copia al capturar:** `Poliza.Guardar()` copia a MySQL la póliza nueva y la anterior. Probado en modo prueba. Todavía no está en la versión de SIAP que usan los compañeros.
 - **Planes y claves de Sicas limpios:** las 30,245 pólizas tienen plan válido y clave válida (rutinas con modo reporte y CSV de cambios en `logs` de SIAP).
 - Catálogos: `claves` con PK (`clave`, `id_aseguradora`); `planes` con varios planes por pareja; planes viejos e `SIN ESPECIFICAR` como INACTIVO; GNP GMM reorganizado a Línea Azul + nivel.
-- Carga completa en `siap_prueba` (20/11): 30,245 pólizas, 0 errores, unos 50 minutos. **En producción: lanzada el 21/11/2026 a las 13:33.**
+- Carga completa en `siap_prueba` (20/11) y **en producción (21/11): 30,245 pólizas, 0 errores** (unos 40 a 50 minutos).
+- **Huérfanos en `siap`: limpio** (0 sin plan, 0 claves inválidas, 0 catálogos inexistentes); solo 13 pólizas sin dirección. Se agregó la forma de pago 3 CUATRIMESTRAL.
+- **Llaves definitivas puestas en `siap.polizas` (21/11/2026):** `(clave, id_aseguradora) → claves`, `(id_plan, id_aseguradora) → planes`, moneda, forma de pago, vendedor, ejecutivo, `id_plan` obligatorio y `CHECK (hasta >= desde)`. En `planes` se agregó `uq_planes_plan_aseguradora`. **`siap_prueba.polizas` todavía no tiene estas llaves** (sus datos son de la carga del 20/11): copiar Sicas y recargar antes de ponérselas.
 
 **Clientes de MySQL local a la web: terminado (18/11/2026).** Flujo completo funcionando: Access → MySQL local → MySQL web.
 
@@ -59,14 +61,12 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 ## Lo que sigue
 
-**Siguiente chat: "SIAP web · Pólizas: huérfanos y llaves".** Pasos:
+**Siguiente chat: "SIAP web · Pólizas: copia completa desde SIAP".** Pasos:
 
-1. **Confirmar la carga completa en producción** (mensaje de `Sincronizar_Todas` y `logs\sync_polizas.log`).
-2. **Reporte de huérfanos contra `siap`** (la consulta está en el chat del 20/11; se agrega al repositorio). En prueba salió: 13 sin dirección, 1 forma de pago inexistente; planes y claves ya corregidos en Sicas.
-3. **Llaves definitivas** de `polizas` (ver `docs/base-de-datos.md`, "Llaves pendientes"): `(clave, id_aseguradora) → claves`, `(id_plan, id_aseguradora) → planes`, moneda, forma de pago, vendedor, ejecutivo, `CHECK (hasta >= desde)` e `id_plan` obligatorio.
-4. **Llamar a `Copiar_A_MySQL`** desde cancelar, no renovar, domiciliar, eliminar domiciliación, renombrar y `Actualizar_Posterior`, y al abrir la consulta de una póliza. Después, publicar la versión de SIAP con la copia al capturar.
-5. **SIAP:** clase `Agente` buscando clave + aseguradora; `Limpiar_Clave` en la captura; que `db` y `Sicas` no se conecten a nada antes del login (hoy van a producción).
-6. **Web:** crear `polizas` y sus catálogos (antes, revisar en phpMyAdmin la tabla `polizas` de la API vieja `sync_poliza.php`), la API `api_web/polizas.php` y ampliar el programa de envío.
+1. **Catálogos se dan de alta en MySQL:** con las llaves puestas, una póliza con una clave o un plan que no existe en MySQL no se copia (queda en `logs\sync_polizas.log`). Revisar dónde da de alta SIAP claves y agentes (¿Sicas, MySQL o los dos?).
+2. **Llamar a `Copiar_A_MySQL`** desde cancelar, no renovar, domiciliar, eliminar domiciliación, renombrar y `Actualizar_Posterior`, y al abrir la consulta de una póliza. Después, publicar la versión de SIAP con la copia al capturar.
+3. **SIAP:** clase `Agente` buscando clave + aseguradora; `Limpiar_Clave` en la captura; que `db` y `Sicas` no se conecten a nada antes del login (hoy van a producción).
+4. **Web:** crear `polizas` y sus catálogos (antes, revisar en phpMyAdmin la tabla `polizas` de la API vieja `sync_poliza.php`), la API `api_web/polizas.php` y ampliar el programa de envío.
 
 **Pendientes de datos de pólizas (sin prisa):** 312 de GMM, vida y otros cuyo concepto contradice el plan (`correcciones_revisar_gmm_vida_otros.csv`); 161 de GNP en LÍNEA AZUL sin nivel; IDPoliza 29830 y 29833 (HDI, vigentes, mismo número limpio: ¿doble captura?); 38 renovaciones sin anterior y 129 sin `IDInicial` (historia, se dejan).
 
@@ -84,6 +84,8 @@ Después de pólizas: **"SIAP web · Primera pantalla con datos reales"** (login
 - La contraseña de Sicas está en el código del módulo `Sicas` de SIAP: ese archivo (y la clase `Poliza`, por la clave de la API) nunca deben subirse al repositorio.
 
 **Pendientes chicos de SIAP:** guardar `Sexo` como 1 (no 255). `Poliza.Guardar()` toma el vendedor y el ejecutivo del cliente (deben ser los de la póliza). `fecha_creacion` de la póliza sale de la fecha de la OT (`FechaCaptura` de `Ordenes`), no del día de captura: decidir cuál se quiere. Revisar qué versión de `Cliente.Copiar_A_MySQL` está en producción. La tabla `ejecutivos` de `siap` tiene `celular` y no `puesto`/`telefono`, y sigue en `utf8mb4_0900_ai_ci`.
+
+**Llaves que faltan en `polizas`:** `id_direccion_riesgo` (con las de direcciones), `id_tarjeta` (cuando exista la tabla) y, cuando MySQL mande, `id_poliza_anterior` e `id_inicial` hacia la misma tabla.
 
 **Ejecutivos:** se dan de alta a mano **en las dos bases** con el mismo ID. Más adelante, sincronizarlos como a los clientes.
 

@@ -236,6 +236,8 @@ Pendiente de agregar cuando se llegue a facturación: `requiere_factura` (ver "P
 
 ### Llaves pendientes (se quitaron para no detener la carga)
 
+**Aplicadas en `siap` el 21/11/2026** (pasos 1 a 3 abajo, después de limpiar Sicas): las llaves dobles de claves y planes, moneda, forma de pago, vendedor, ejecutivo, `id_plan NOT NULL` y `ck_polizas_vigencia`. Para la llave doble de planes se agregó `uq_planes_plan_aseguradora (id_plan, id_aseguradora)` en `planes`. Siguen sin llave `id_direccion_riesgo`, `id_tarjeta`, `id_poliza_anterior` e `id_inicial` (estas dos obligarían a copiar la anterior antes que la nueva).
+
 Decisión del 18/11/2026: **primero cargar, luego medir, limpiar y al final poner las llaves.** Con 20 años de datos de Sicas, muchas pólizas no pasarían las llaves (por ejemplo, ejecutivos que ya no están en `ejecutivos`). Este paso es **obligatorio antes de mandar pólizas a la web**:
 
 1. Reporte de huérfanos: pólizas con ejecutivo, vendedor, clave, plan, moneda o forma de pago que no existen en su catálogo; y pólizas cuya clave y plan son de aseguradoras distintas a `id_aseguradora`.
