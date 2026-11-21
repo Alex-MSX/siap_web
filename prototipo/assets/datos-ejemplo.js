@@ -2,7 +2,7 @@
   Datos de EJEMPLO para el prototipo. Todos los nombres, RFC, pólizas y teléfonos son inventados.
   En la versión real, esta información llegará de la base de datos a través del backend (API).
 
-  Categorías de ramo (campo "cat"): autos, gmm, vida, hogar, accidentes, rc, transporte, diversos
+  Categorías de ramo (campo "cat"): autos, gmm, vida, hogar, accidentes, rc, transporte, otros (igual que ramos.categoria)
   Vendedor: va en cada póliza (un cliente puede tener pólizas de distintos vendedores).
   Nombres de personas físicas: nombre, apellido paterno, apellido materno.
   Estatus de póliza (campo "est"): vig = vigente, ren = por renovar (dias = días para vencer), off = no vigente
@@ -41,7 +41,7 @@ var SIAP_DATOS = {
         { num: 'AUT-558120', aseg: 'Qualitas', cat: 'autos', ramo: 'Autos flotilla', concepto: 'Flotilla · 12 unidades', desde: '15/01/2026', hasta: '15/01/2027', prima: 184320.50, vendedor: 'Ernesto Lugo Rivas', est: 'vig', rec: 1 },
         { num: 'GMC-30417', aseg: 'AXA', cat: 'gmm', ramo: 'GMM colectivo', concepto: 'Colectivo · 38 asegurados', desde: '01/03/2026', hasta: '01/03/2027', prima: 612450.00, vendedor: 'Ernesto Lugo Rivas', est: 'vig', rec: 2 },
         { num: 'RC-00921', aseg: 'Chubb', cat: 'rc', ramo: 'Responsabilidad civil', concepto: 'RC general', desde: '01/12/2025', hasta: '01/12/2026', prima: 46880.00, vendedor: 'Patricia Gómez Silva', est: 'ren', dias: 25, rec: 0 },
-        { num: 'EMP-7781', aseg: 'Mapfre', cat: 'diversos', ramo: 'Empresarial', concepto: 'Paquete empresarial · oficinas', desde: '10/06/2025', hasta: '10/06/2026', prima: 32100.00, vendedor: 'Ernesto Lugo Rivas', est: 'off', rec: 0 }
+        { num: 'EMP-7781', aseg: 'Mapfre', cat: 'otros', ramo: 'Empresarial', concepto: 'Paquete empresarial · oficinas', plan: 'SIN ESPECIFICAR', desde: '10/06/2025', hasta: '10/06/2026', prima: 32100.00, vendedor: 'Ernesto Lugo Rivas', est: 'off', rec: 0 }
       ]
     },
     {
@@ -66,7 +66,7 @@ var SIAP_DATOS = {
       ],
       direcciones: [{ calle: 'Av. Paseo de los Fresnos', ext: '245', int: 'B', colonia: 'Lomas del Valle', municipio: 'Naucalpan', cp: '53150' }],
       polizas: [
-        { num: 'GMI-10879', aseg: 'GNP', cat: 'gmm', ramo: 'GMM familiar', concepto: 'Línea Azul · familia', desde: '01/08/2026', hasta: '01/08/2027', prima: 56408.87, vendedor: 'Ernesto Lugo Rivas', est: 'vig', rec: 0 },
+        { num: 'GMI-10879', aseg: 'GNP', cat: 'gmm', ramo: 'GMM familiar', concepto: 'Línea Azul · familia', plan: 'LÍNEA AZUL PREMIER 100', desde: '01/08/2026', hasta: '01/08/2027', prima: 56408.87, vendedor: 'Ernesto Lugo Rivas', est: 'vig', rec: 0 },
         { num: 'AUT-77310', aseg: 'HDI', cat: 'autos', ramo: 'Autos individual', concepto: 'Mazda CX-5 2024', desde: '20/11/2025', hasta: '20/11/2026', prima: 18940.00, vendedor: 'Ernesto Lugo Rivas', est: 'ren', dias: 14, rec: 1 },
         { num: 'VID-08893', aseg: 'Metlife', cat: 'vida', ramo: 'Vida individual', concepto: 'Temporal 20 años', desde: '01/04/2026', hasta: '01/04/2027', prima: 2569.21, vendedor: 'Ernesto Lugo Rivas', est: 'vig', rec: 0 },
         { num: 'HOG-20114', aseg: 'Zurich', cat: 'hogar', ramo: 'Hogar', concepto: 'Casa habitación', desde: '05/02/2026', hasta: '05/02/2027', prima: 7850.00, vendedor: 'Ernesto Lugo Rivas', est: 'vig', rec: 0 }

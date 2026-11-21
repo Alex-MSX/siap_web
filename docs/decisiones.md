@@ -78,6 +78,7 @@
 - **En autos gana el concepto** cuando dice claramente la cobertura y ese plan existe. Autos sin plan conocido → AMPLIA de su aseguradora. En GMM y vida el concepto no se aplica (menos confiable).
 - **Claves: una clave es única por aseguradora**, no sola (fusiones y el Sicas viejo, que no dejaba repetir: `54211V`). PK de `claves` = (`clave`, `id_aseguradora`). `id_aseguradora` se queda en la póliza y no es redundante. Las claves que quedaron mal por el cierre de autos de AIG se corrigieron a la clave correcta; las fusiones reales se dieron de alta como inactivas.
 - **Estatus de catálogos calculado** (ACTIVO / NUEVO / INACTIVO, ver `base-de-datos.md`, "Por confirmar"). "Inactivo" solo significa oculto por omisión: se puede mostrar y escoger.
+- **Pestañas por categoría de ramo:** Autos, GMM, Accidentes, Vida, Hogar, RC, Transporte y Otros (opción A: la base se ajusta al prototipo). La ficha de póliza muestra el **plan** debajo del ramo; SIN ESPECIFICAR en gris.
 - **Trabajar sobre producción** con respaldo del `.accdb` antes de cada etapa y rutinas con modo reporte y CSV de lo que cambió.
 
 ## Agregados al diseño (para validar)

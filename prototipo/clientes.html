@@ -112,10 +112,9 @@
 (function () {
   var esc = SIAP.esc, dinero = SIAP.dinero;
   var CLIENTES = SIAP_DATOS.clientes;
-  var OTROS = ['rc', 'transporte', 'diversos'];
   var PESTANAS = [
     { k: 'todos', label: 'Todos' }, { k: 'autos', label: 'Autos' }, { k: 'gmm', label: 'GMM' },
-    { k: 'accidentes', label: 'Accidentes' }, { k: 'vida', label: 'Vida' }, { k: 'hogar', label: 'Hogar' }, { k: 'otros', label: 'Otros' }
+    { k: 'accidentes', label: 'Accidentes' }, { k: 'vida', label: 'Vida' }, { k: 'hogar', label: 'Hogar' }, { k: 'rc', label: 'RC' }, { k: 'transporte', label: 'Transporte' }, { k: 'otros', label: 'Otros' }
   ];
   var estado = { busqueda: 'valle', seleccionado: CLIENTES[0].id, pestana: 'todos', soloVigentes: false };
 
@@ -125,7 +124,6 @@
 
   function enPestana(p, k) {
     if (k === 'todos') return true;
-    if (k === 'otros') return OTROS.indexOf(p.cat) >= 0;
     return p.cat === k;
   }
 
