@@ -79,6 +79,10 @@
 - **Claves: una clave es única por aseguradora**, no sola (fusiones y el Sicas viejo, que no dejaba repetir: `54211V`). PK de `claves` = (`clave`, `id_aseguradora`). `id_aseguradora` se queda en la póliza y no es redundante. Las claves que quedaron mal por el cierre de autos de AIG se corrigieron a la clave correcta; las fusiones reales se dieron de alta como inactivas.
 - **Estatus de catálogos calculado** (ACTIVO / NUEVO / INACTIVO, ver `base-de-datos.md`, "Por confirmar"). "Inactivo" solo significa oculto por omisión: se puede mostrar y escoger.
 - **Pestañas por categoría de ramo:** Autos, GMM, Accidentes, Vida, Hogar, RC, Transporte y Otros (opción A: la base se ajusta al prototipo). La ficha de póliza muestra el **plan** debajo del ramo; SIN ESPECIFICAR en gris.
+- **Camino a "MySQL manda" en pólizas, en 3 etapas:** (1) copia completa Sicas → MySQL desde todos los puntos de SIAP + copia nocturna; (2) SIAP lee las pólizas de MySQL; (3) las escrituras cambian de sentido (MySQL primero y `Copiar_A_Sicas`). La póliza nace de una orden que vive en Sicas (`INSERT INTO Polizas SELECT * FROM Ordenes`), por eso `Guardar` cambia al final: MySQL da el `id_poliza` y Sicas crea el renglón con ese `IDPoliza`.
+- **Ejecutivo:** reasignar a un cliente cambia solo sus pólizas vigentes y todos los recibos de esas pólizas; lo demás es historia.
+- **OT de renovación:** cuando la póliza ya se renovó, su OT de renovación es la `orden` de la póliza nueva (se calcula, no se guarda). `orden_renovacion` solo guarda la OT en trámite y desaparece con el módulo de órdenes, donde la orden apunta a la póliza que renueva. `orden` (OT de origen) es permanente y se volverá `id_orden`.
+- **Órdenes (para el módulo futuro):** en Sicas, `Ordenes` es un borrador de la póliza (mismas columnas que `Polizas`) y `Relacion Ordenes` es el trámite. En la web, la orden es un solo registro (trámite + datos + estatus) que al terminarse crea la póliza o el endoso y se conserva como historia.
 - **Trabajar sobre producción** con respaldo del `.accdb` antes de cada etapa y rutinas con modo reporte y CSV de lo que cambió.
 
 ## Agregados al diseño (para validar)

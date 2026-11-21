@@ -44,7 +44,8 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 - Tabla `polizas` en MySQL local (`siap` y `siap_prueba`): 33 columnas limpias, contra 169 de Sicas.
 - `Poliza.Copiar_A_MySQL` corregido: traduce `IDD` al `id_direccion` de MySQL, `Normalizar_OT` (0 = sin orden) y plan solo desde `Cobertura` (sin búsqueda por pareja).
-- **Copia al capturar:** `Poliza.Guardar()` copia a MySQL la póliza nueva y la anterior. Probado en modo prueba. Todavía no está en la versión de SIAP que usan los compañeros.
+- **Copia a MySQL en todos los puntos que modifican pólizas (21/11/2026):** capturar (nueva y anterior), cancelar, no renovar, domiciliar, quitar domiciliación, renombrar, OT de renovación, terminar renovación, % de comisión y eliminar OT (`Poliza.Copiar_A_MySQL_Donde` y atajos `Copiar_Poliza(s)_A_MySQL` en `Funciones`). Se encontraron leyendo todo el código de SIAP (20 escrituras a `Polizas`; los 4 pasos de renovación no están en MySQL). Probado en prueba; **instalada a los compañeros el 21/11/2026**.
+- **Reasignar ejecutivo:** solo cambia pólizas vigentes y todos sus recibos (antes cambiaba todas y se perdía la historia de quién atendió cada póliza).
 - **Planes y claves de Sicas limpios:** las 30,245 pólizas tienen plan válido y clave válida (rutinas con modo reporte y CSV de cambios en `logs` de SIAP).
 - Catálogos: `claves` con PK (`clave`, `id_aseguradora`); `planes` con varios planes por pareja; planes viejos e `SIN ESPECIFICAR` como INACTIVO; GNP GMM reorganizado a Línea Azul + nivel.
 - Carga completa en `siap_prueba` (20/11) y **en producción (21/11): 30,245 pólizas, 0 errores** (unos 40 a 50 minutos).
@@ -61,12 +62,14 @@ Ritmo: **paso por paso y sin prisa.** Es el primer desarrollo web de Alex: prime
 
 ## Lo que sigue
 
-**Siguiente chat: "SIAP web · Pólizas: copia completa desde SIAP".** Pasos:
+**Siguiente chat: "SIAP web · Pólizas: copia nocturna y lectura desde MySQL".** Pasos:
 
-1. **Catálogos se dan de alta en MySQL:** con las llaves puestas, una póliza con una clave o un plan que no existe en MySQL no se copia (queda en `logs\sync_polizas.log`). Revisar dónde da de alta SIAP claves y agentes (¿Sicas, MySQL o los dos?).
-2. **Llamar a `Copiar_A_MySQL`** desde cancelar, no renovar, domiciliar, eliminar domiciliación, renombrar y `Actualizar_Posterior`, y al abrir la consulta de una póliza. Después, publicar la versión de SIAP con la copia al capturar.
-3. **SIAP:** clase `Agente` buscando clave + aseguradora; `Limpiar_Clave` en la captura; que `db` y `Sicas` no se conecten a nada antes del login (hoy van a producción).
-4. **Web:** crear `polizas` y sus catálogos (antes, revisar en phpMyAdmin la tabla `polizas` de la API vieja `sync_poliza.php`), la API `api_web/polizas.php` y ampliar el programa de envío.
+1. **Verificar en el día a día** que lo capturado y modificado llega a `siap` (`fecha_modificacion` reciente) y revisar `logs\sync_polizas.log` en la carpeta de instalación de SIAP.
+2. **Copia completa cada noche** (red de seguridad para lo que se haga fuera de SIAP): `Sincronizar_Todas` sin mensajes, lanzada por el Programador de tareas del servidor.
+3. **Catálogos se dan de alta en MySQL:** con las llaves puestas, una póliza con una clave o un plan que no existe en MySQL no se copia (queda en `logs\sync_polizas.log`). Revisar dónde da de alta SIAP claves y agentes (¿Sicas, MySQL o los dos?).
+4. **Etapa 2:** que SIAP lea las pólizas de MySQL (`New Poliza` y pantallas). **Etapa 3:** cambiar el sentido de las escrituras (MySQL primero, `Copiar_A_Sicas` después), empezando por cancelar, no renovar y domiciliar; `Guardar` al final.
+5. **SIAP:** clase `Agente` buscando clave + aseguradora; `Limpiar_Clave` en la captura; que `db` y `Sicas` no se conecten a nada antes del login (hoy van a producción).
+6. **Web:** crear `polizas` y sus catálogos (antes, revisar en phpMyAdmin la tabla `polizas` de la API vieja `sync_poliza.php`), la API `api_web/polizas.php` y ampliar el programa de envío.
 
 **Pendientes de datos de pólizas (sin prisa):** 312 de GMM, vida y otros cuyo concepto contradice el plan (`correcciones_revisar_gmm_vida_otros.csv`); 161 de GNP en LÍNEA AZUL sin nivel; IDPoliza 29830 y 29833 (HDI, vigentes, mismo número limpio: ¿doble captura?); 38 renovaciones sin anterior y 129 sin `IDInicial` (historia, se dejan).
 
